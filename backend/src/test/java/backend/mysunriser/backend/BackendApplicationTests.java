@@ -1,4 +1,4 @@
-package com.mysunriser.backend;
+package backend.mysunriser.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
