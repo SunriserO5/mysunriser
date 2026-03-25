@@ -14,6 +14,6 @@ public interface PostDao extends BaseMapper<post>{
     post getBySlug(@Param("slug") String slug);
 
     @Select("SELECT * from post WHERE title=#{title}")
-    PostResponse getByTitle(@Param("title") String title);
+    post getByTitle(@Param("title") String title);
 }
 

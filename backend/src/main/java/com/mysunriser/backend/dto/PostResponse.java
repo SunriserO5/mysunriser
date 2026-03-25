@@ -1,5 +1,7 @@
 package com.mysunriser.backend.dto;
 
+import com.mysunriser.backend.entity.post;
+
 public class PostResponse {
     private int id;
     private String slug;
@@ -16,8 +18,15 @@ public class PostResponse {
         this.status = status;
         this.publishTime = publishTime;
     }
-    public static PostResponse of(){
-        return null;
+    public static PostResponse of(post postEntity){
+        return new PostResponse(
+                postEntity.getId(),
+                postEntity.getSlug(),
+                postEntity.getTitle(),
+                postEntity.getContent(),
+                postEntity.getStatus(),
+                postEntity.getPublishTime()
+        );
     }
 
     public int getId() {
