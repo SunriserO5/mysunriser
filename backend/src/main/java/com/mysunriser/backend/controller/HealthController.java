@@ -2,7 +2,7 @@ package com.mysunriser.backend.controller;
 
 
 //import com.mysunriser.backend.mapper.PingMapper;
-import com.mysunriser.backend.mapper.PingMapper;
+import com.mysunriser.backend.Dao.PingMapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

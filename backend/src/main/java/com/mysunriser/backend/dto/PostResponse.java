@@ -1,7 +1,7 @@
 package com.mysunriser.backend.dto;
 
 public class PostResponse {
-    private int postId;
+    private int id;
     private String slug;
     private String title;
     private String content;
@@ -9,7 +9,7 @@ public class PostResponse {
     private int publishTime;
 
     private PostResponse(int postId, String slug, String title, String content, String status, int publishTime) {
-        this.postId = postId;
+        this.id = postId;
         this.slug = slug;
         this.title = title;
         this.content = content;
@@ -20,8 +20,8 @@ public class PostResponse {
         return null;
     }
 
-    public int getPostId() {
-        return postId;
+    public int getId() {
+        return id;
     }
 
     public String getSlug() {

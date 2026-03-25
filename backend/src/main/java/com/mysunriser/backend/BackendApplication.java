@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 //import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration;
 //import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
 //import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
-@MapperScan("com.mysunriser.backend.mapper")
+@MapperScan("com.mysunriser.backend.Dao")
 @SpringBootApplication
 public class BackendApplication {
 
