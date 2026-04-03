@@ -1,5 +1,7 @@
 package com.mysunriser.backend.dto;
 
+import java.time.LocalDateTime;
+
 import com.mysunriser.backend.entity.post;
 
 public class PostResponse {
@@ -8,15 +10,15 @@ public class PostResponse {
     private String title;
     private String content;
     private String status;
-    private int publishTime;
+    private LocalDateTime publish_at;
 
-    private PostResponse(int postId, String slug, String title, String content, String status, int publishTime) {
+    private PostResponse(int postId, String slug, String title, String content, String status, LocalDateTime published_at) {
         this.id = postId;
         this.slug = slug;
         this.title = title;
         this.content = content;
         this.status = status;
-        this.publishTime = publishTime;
+        this.publish_at = published_at;
     }
     public static PostResponse of(post postEntity){
         return new PostResponse(
@@ -25,7 +27,7 @@ public class PostResponse {
                 postEntity.getTitle(),
                 postEntity.getContent(),
                 postEntity.getStatus(),
-                postEntity.getPublishTime()
+                postEntity.getPublished_at()
         );
     }
 
@@ -49,8 +51,8 @@ public class PostResponse {
         return status;
     }
 
-    public int getPublishTime() {
-        return publishTime;
+    public LocalDateTime getPublish_at() {
+        return publish_at;
     }
 }
 
