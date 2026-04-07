@@ -1,0 +1,151 @@
+openapi: 3.0.3
+info:
+  title: Mysunriser Backend API
+  version: 1.0.0
+  description: OpenAPI spec generated from current controllers.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      description: Returns API and database health status.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/page:
+    get:
+      summary: List page items
+      description: Returns a paged list of blog items.
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/blog/{slug}:
+    get:
+      summary: Get post by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        db:
+          type: boolean
+      required:
+        - ok
+        - db
+    PageResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PageItem"
+      required:
+        - page
+        - pageSize
+        - items
+    PageItem:
+      type: object
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        status:
+          type: string
+        publishTime:
+          type: string
+          format: date-time
+    PostResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+        publish_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - title
+        - content
+        - status
+        - publish_at
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Business error code.
+        message:
+          type: string
+        timeStamp:
+          type: integer
+          format: int64
+      required:
+        - code
+        - message
+        - timeStamp
