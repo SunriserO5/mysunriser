@@ -4,6 +4,15 @@
 :root {
   --page-text: #0f172a;
   --focus-color: #ea580c;
+  --color-primary-bg: #0f172a;
+  --color-primary-bg-hover: #1e293b;
+  --color-primary-fg: #f8fafc;
+  --color-secondary-bg: #ffffff;
+  --color-secondary-bg-hover: #f1f5f9;
+  --color-secondary-fg: #0f172a;
+  --color-secondary-fg-hover: #020617;
+  --color-secondary-border-hover: #94a3b8;
+  --color-nav-hover-border: #cbd5e1;
 }
 
 * {

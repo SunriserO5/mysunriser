@@ -5,13 +5,13 @@
 
     <div class="mt-6 space-y-4 text-sm leading-8 text-slate-700 sm:text-base">
       <p>
+        Welcome to MySunriser! 我是一名来自中国的本科计算机学生,欢迎来到我的小小天地.
+      </p>
+      <p>
         这个站点从后端开始搭建，目标是打造一个长期维护的个人内容平台：功能不求复杂，但追求结构清晰、迭代稳定。
       </p>
       <p>
-        技术上采用 Vue 3 + TypeScript + Tailwind CSS 构建前端，后端是 Spring Boot + MyBatis + Flyway，数据库使用 MySQL。
-      </p>
-      <p>
-        内容上主要聚焦开发过程记录、工程实践、学习笔记与一些生活观察。
+        内容上主要聚焦开发过程记录、工程实践、日常笔记与一些社会观察。
       </p>
     </div>
 

@@ -38,8 +38,8 @@ onMounted(loadHomeData)
     />
 
     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-orange-600">MY SUNRISER</p>
-    <h1 class="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">每天写一点，
-      <span class="text-orange-600">就会看见新的日出</span>
+    <h1 class="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">积跬步，
+      <span class="text-orange-600">以致千里</span>
     </h1>
     <p class="mt-5 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
       这里记录技术、学习和生活观察。前端使用 Vue 3，后端基于 Spring Boot，整体保持轻量、清晰、可持续演进。
@@ -87,27 +87,27 @@ onMounted(loadHomeData)
 
 <style scoped>
 .cta-primary {
-  background-color: #0f172a;
-  color: #f8fafc !important;
-  -webkit-text-fill-color: #f8fafc;
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary-fg) !important;
+  -webkit-text-fill-color: var(--color-primary-fg);
 }
 
 .cta-primary:hover {
-  background-color: #1e293b !important;
+  background-color: var(--color-primary-bg-hover) !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff;
 }
 
 .cta-secondary {
-  background-color: #ffffff;
-  color: #0f172a !important;
-  -webkit-text-fill-color: #0f172a;
+  background-color: var(--color-secondary-bg);
+  color: var(--color-secondary-fg) !important;
+  -webkit-text-fill-color: var(--color-secondary-fg);
 }
 
 .cta-secondary:hover {
-  border-color: #94a3b8 !important;
-  background-color: #f1f5f9 !important;
-  color: #020617 !important;
-  -webkit-text-fill-color: #020617;
+  border-color: var(--color-secondary-border-hover) !important;
+  background-color: var(--color-secondary-bg-hover) !important;
+  color: var(--color-secondary-fg-hover) !important;
+  -webkit-text-fill-color: var(--color-secondary-fg-hover);
 }
 </style>

@@ -65,26 +65,26 @@ function isActive(path: string): boolean {
 
 <style scoped>
 .nav-link {
-  color: #0f172a !important;
-  -webkit-text-fill-color: #0f172a;
+  color: var(--color-secondary-fg) !important;
+  -webkit-text-fill-color: var(--color-secondary-fg);
 }
 
 .nav-link-active {
-  background-color: #0f172a;
-  color: #f8fafc !important;
-  -webkit-text-fill-color: #f8fafc;
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary-fg) !important;
+  -webkit-text-fill-color: var(--color-primary-fg);
 }
 
 .nav-link:hover {
-  border-color: #cbd5e1 !important;
-  background-color: #f1f5f9 !important;
-  color: #020617 !important;
-  -webkit-text-fill-color: #020617;
+  border-color: var(--color-nav-hover-border) !important;
+  background-color: var(--color-secondary-bg-hover) !important;
+  color: var(--color-secondary-fg-hover) !important;
+  -webkit-text-fill-color: var(--color-secondary-fg-hover);
 }
 
 .nav-link-active:hover {
-  border-color: #1e293b !important;
-  background-color: #1e293b !important;
+  border-color: var(--color-primary-bg-hover) !important;
+  background-color: var(--color-primary-bg-hover) !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff;
 }
