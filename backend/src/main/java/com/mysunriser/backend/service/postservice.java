@@ -32,4 +32,11 @@ public class postservice {
 
         return PageResponse.of(pageNum, PageSize, result.getRecords());
     }
+
+    public String initPost(post newpost){
+        boolean statues = postDao.insertOrUpdate(newpost);
+        if(!statues)return "Create Failed";
+        else return "Success!";
+
+    }
 }

@@ -1,13 +1,10 @@
 package com.mysunriser.backend.controller;
 
 
+import com.mysunriser.backend.dto.CreatePostRequest;
 import com.mysunriser.backend.dto.PostResponse;
 import com.mysunriser.backend.service.postservice;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/blog")
@@ -22,5 +19,10 @@ public class PostController {
     @GetMapping("/{slug}")
     public PostResponse getPost(@PathVariable String slug){
         return postservice.getPostBySlug(slug);
+    }
+
+    @PostMapping
+    public String createPost(@RequestBody CreatePostRequest request){
+        return postservice.initPost(request.toEntity());
     }
 }
