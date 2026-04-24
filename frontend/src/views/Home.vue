@@ -63,7 +63,7 @@ onMounted(loadHomeData)
         class="rounded-full px-3 py-1 text-xs font-semibold"
         :class="health.ok && health.db ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
       >
-        API {{ health.ok ? '在线' : '异常' }} / DB {{ health.db ? '在线' : '异常' }}
+        {{ health.ok && health.db ? 'online' : 'offline' }}
       </span>
     </div>
   </section>

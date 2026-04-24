@@ -3,7 +3,7 @@ export interface PageItem {
   title: string
   summary: string
   status: string
-  publishTime: string
+  publishAt: string
 }
 
 export interface PageResponse {
@@ -18,7 +18,7 @@ export interface PostDetail {
   title: string
   content: string
   status: string
-  publish_at: string
+  publishAt: string
 }
 
 export interface ErrorResponse {

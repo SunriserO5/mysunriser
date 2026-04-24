@@ -88,7 +88,7 @@ watch(
     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">BLOG</p>
     <h1 class="mt-2 text-4xl font-bold tracking-tight text-slate-900">文章列表</h1>
     <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-      聚焦代码实践、项目复盘与思考沉淀。分页数据来自后端接口 /api/page。
+      聚焦代码实践、项目复盘与思考沉淀。
     </p>
   </section>
 

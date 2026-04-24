@@ -57,20 +57,27 @@ function retryLoad() {
 }
 
 const publishedAt = computed(() => {
-  if (!post.value?.publish_at) {
+  if (!post.value?.publishAt) {
     return ''
   }
 
-  const date = new Date(post.value.publish_at)
+  const date = new Date(post.value.publishAt)
   if (Number.isNaN(date.getTime())) {
-    return post.value.publish_at
+    return post.value.publishAt
   }
 
   return new Intl.DateTimeFormat('zh-CN', {
-    dateStyle: 'full',
-    timeStyle: 'short',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   }).format(date)
 })
+
+const publishedAtText = computed(() => publishedAt.value || '暂未设置')
+const publishedAtDateTime = computed(() => post.value?.publishAt ?? null)
 
 const renderedContent = computed(() => {
   const source = post.value?.content ?? ''
@@ -91,9 +98,17 @@ const renderedContent = computed(() => {
     </div>
 
     <div v-else-if="post" class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-10">
-      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">{{ post.status }}</p>
-      <h1 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ post.title }}</h1>
-      <p class="mt-4 text-sm text-slate-500">{{ publishedAt }}</p>
+      <header>
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">{{ post.status }}</p>
+        <h1 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ post.title }}</h1>
+        <p
+          class="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 sm:text-sm"
+        >
+          <span class="text-slate-500">发布于</span>
+          <time v-if="publishedAtDateTime" :datetime="publishedAtDateTime" class="text-slate-700">{{ publishedAtText }}</time>
+          <span v-else class="text-slate-700">{{ publishedAtText }}</span>
+        </p>
+      </header>
 
       <div class="article-content mt-8" v-html="renderedContent" />
     </div>

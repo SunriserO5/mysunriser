@@ -10,6 +10,6 @@ public class PageItems {
     private String title;
     private String summary;
     private String status;
-    private LocalDateTime publishTime;
+    private LocalDateTime publishAt;
 
 }

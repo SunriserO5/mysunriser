@@ -23,7 +23,7 @@ function formatDate(dateLike: string): string {
   >
     <div class="mb-3 flex items-center justify-between text-xs text-slate-500">
       <span class="rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700">{{ item.status }}</span>
-      <time>{{ formatDate(item.publishTime) }}</time>
+      <time>{{ formatDate(item.publishAt) }}</time>
     </div>
 
     <h3 class="text-xl font-semibold tracking-tight text-slate-900">

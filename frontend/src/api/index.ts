@@ -31,6 +31,24 @@ async function request<T>(path: string): Promise<T> {
   return (await response.json()) as T
 }
 
+type PublishAtSource = {
+  publishAt?: string
+  publishedAt?: string
+  publish_at?: string
+  published_at?: string
+  publishTime?: string
+}
+
+type RawPageItem = Omit<PageResponse['items'][number], 'publishAt'> & PublishAtSource
+type RawPageResponse = Omit<PageResponse, 'items'> & {
+  items: RawPageItem[]
+}
+type RawPostDetail = Omit<PostDetail, 'publishAt'> & PublishAtSource
+
+function normalizePublishAt(source: PublishAtSource): string {
+  return source.publishAt ?? source.publishedAt ?? source.publish_at ?? source.published_at ?? source.publishTime ?? ''
+}
+
 export async function fetchHealth(): Promise<HealthResponse> {
   return request<HealthResponse>('/api/health')
 }
@@ -41,11 +59,24 @@ export async function fetchPage(page: number, pageSize: number): Promise<PageRes
     pageSize: String(pageSize),
   })
 
-  return request<PageResponse>(`/api/page?${params.toString()}`)
+  const payload = await request<RawPageResponse>(`/api/page?${params.toString()}`)
+
+  return {
+    ...payload,
+    items: payload.items.map((item) => ({
+      ...item,
+      publishAt: normalizePublishAt(item),
+    })),
+  }
 }
 
 export async function fetchPost(slug: string): Promise<PostDetail> {
-  return request<PostDetail>(`/api/blog/${encodeURIComponent(slug)}`)
+  const payload = await request<RawPostDetail>(`/api/blog/${encodeURIComponent(slug)}`)
+
+  return {
+    ...payload,
+    publishAt: normalizePublishAt(payload),
+  }
 }
 
 export { ApiError }

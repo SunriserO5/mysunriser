@@ -10,15 +10,15 @@ public class PostResponse {
     private String title;
     private String content;
     private String status;
-    private LocalDateTime publish_at;
+    private LocalDateTime publishAt;
 
-    private PostResponse(int postId, String slug, String title, String content, String status, LocalDateTime published_at) {
+    private PostResponse(int postId, String slug, String title, String content, String status, LocalDateTime publishedAt) {
         this.id = postId;
         this.slug = slug;
         this.title = title;
         this.content = content;
         this.status = status;
-        this.publish_at = published_at;
+        this.publishAt = publishedAt;
     }
     public static PostResponse of(post postEntity){
         return new PostResponse(
@@ -51,9 +51,8 @@ public class PostResponse {
         return status;
     }
 
-    public LocalDateTime getPublish_at() {
-        return publish_at;
+    public LocalDateTime getPublishAt() {
+        return publishAt;
     }
 }
-
 

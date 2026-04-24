@@ -48,6 +48,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/blog:
+    post:
+      summary: Create or update post
+      description: |
+        Upsert a blog post by request payload.
+        This endpoint maps to backend insertOrUpdate behavior.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostRequest"
+      responses:
+        "200":
+          description: Operation result text
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Success!
+        "400":
+          description: Validation error or malformed request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/blog/{slug}:
     get:
       summary: Get post by slug
@@ -108,9 +134,33 @@ components:
           type: string
         status:
           type: string
-        publishTime:
+        publishAt:
           type: string
           format: date-time
+    CreatePostRequest:
+      type: object
+      description: |
+        Create or update payload for /api/blog.
+        Request field uses published_at, while read responses use publishAt.
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          description: Post status such as draft or published.
+        published_at:
+          type: string
+          format: date-time
+          description: Defaults to current server time if omitted.
+      required:
+        - slug
+        - title
+        - content
+        - status
     PostResponse:
       type: object
       properties:
@@ -124,7 +174,7 @@ components:
           type: string
         status:
           type: string
-        publish_at:
+        publishAt:
           type: string
           format: date-time
       required:
@@ -133,7 +183,7 @@ components:
         - title
         - content
         - status
-        - publish_at
+        - publishAt
     ErrorResponse:
       type: object
       properties:
