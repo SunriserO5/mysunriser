@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
 
 withDefaults(
   defineProps<{
@@ -11,6 +13,8 @@ withDefaults(
 )
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuth()
 
 const links = [
   { name: '首页', to: '/' },
@@ -25,6 +29,18 @@ function isActive(path: string): boolean {
 
   return route.path === path || route.path.startsWith(`${path}/`)
 }
+
+async function logout() {
+  await auth.logout()
+
+  if (route.meta.requiresAuth) {
+    await router.push({ name: 'login' })
+  }
+}
+
+onMounted(() => {
+  void auth.restore()
+})
 </script>
 
 <template>
@@ -44,7 +60,7 @@ function isActive(path: string): boolean {
         <span class="text-lg font-semibold tracking-tight text-slate-900">MySunriser</span>
       </RouterLink>
 
-      <ul class="flex items-center gap-2 text-sm font-medium sm:gap-3">
+      <ul class="flex flex-wrap items-center justify-end gap-2 text-sm font-medium sm:gap-3">
         <li v-for="link in links" :key="link.to">
           <RouterLink
             :to="link.to"
@@ -56,6 +72,41 @@ function isActive(path: string): boolean {
             "
           >
             {{ link.name }}
+          </RouterLink>
+        </li>
+        <li v-if="auth.isAdmin.value">
+          <RouterLink
+            to="/admin/users"
+            class="nav-link rounded-full border border-transparent px-3 py-1.5 transition"
+            :class="
+              isActive('/admin')
+                ? 'nav-link-active border-slate-800 bg-slate-900 text-slate-50 shadow-md'
+                : 'text-slate-900'
+            "
+          >
+            后台
+          </RouterLink>
+        </li>
+        <li v-if="auth.isAuthenticated.value">
+          <button
+            class="nav-link rounded-full border border-transparent px-3 py-1.5 transition"
+            type="button"
+            @click="logout"
+          >
+            登出
+          </button>
+        </li>
+        <li v-else>
+          <RouterLink
+            to="/login"
+            class="nav-link rounded-full border border-transparent px-3 py-1.5 transition"
+            :class="
+              isActive('/login')
+                ? 'nav-link-active border-slate-800 bg-slate-900 text-slate-50 shadow-md'
+                : 'text-slate-900'
+            "
+          >
+            登录
           </RouterLink>
         </li>
       </ul>
