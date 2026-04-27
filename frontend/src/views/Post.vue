@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import DOMPurify from 'dompurify'
 import MarkdownIt from 'markdown-it'
+import { ApiError, updateAdminPost } from '../api'
+import PostEditorForm from '../components/PostEditorForm.vue'
+import { useAuth } from '../composables/useAuth'
 import { usePost } from '../composables/usePost'
+import type { AdminPostUpdatePayload, PostEditorFormValue } from '../types'
+import { postToEditorValue, toApiPublishedAt } from '../utils/postEditor'
 
 const route = useRoute()
+const auth = useAuth()
 const slug = computed(() => String(route.params.slug ?? ''))
 
 const markdown = new MarkdownIt({
@@ -17,6 +23,10 @@ const markdown = new MarkdownIt({
 const { post, loading, error, loadPost } = usePost()
 
 const fallbackTitle = '文章 | MySunriser'
+const isEditing = ref(false)
+const saving = ref(false)
+const saveError = ref<string | null>(null)
+const editValue = ref<PostEditorFormValue | null>(null)
 
 watch(
   slug,
@@ -25,7 +35,10 @@ watch(
       return
     }
 
-    loadPost(nextSlug)
+    isEditing.value = false
+    saveError.value = null
+    editValue.value = null
+    void loadPost(nextSlug)
   },
   { immediate: true },
 )
@@ -54,6 +67,53 @@ function retryLoad() {
   }
 
   void loadPost(slug.value)
+}
+
+function beginEdit() {
+  if (!post.value) {
+    return
+  }
+
+  editValue.value = postToEditorValue(post.value)
+  isEditing.value = true
+  saveError.value = null
+}
+
+function cancelEdit() {
+  isEditing.value = false
+  saveError.value = null
+  editValue.value = null
+}
+
+async function saveEdit(value: PostEditorFormValue) {
+  if (!post.value || saving.value) {
+    return
+  }
+
+  const payload: AdminPostUpdatePayload = {
+    title: value.title.trim(),
+    content: value.content,
+    status: value.status.trim(),
+    published_at: toApiPublishedAt(value.publishedAt),
+  }
+
+  if (!payload.title || !payload.content.trim() || !payload.status) {
+    saveError.value = '标题、正文和状态不能为空'
+    return
+  }
+
+  saving.value = true
+  saveError.value = null
+
+  try {
+    post.value = await updateAdminPost(post.value.slug, payload)
+    isEditing.value = false
+    editValue.value = null
+  } catch (err) {
+    saveError.value = err instanceof ApiError ? err.message : '文章保存失败'
+  } finally {
+    saving.value = false
+  }
 }
 
 const publishedAt = computed(() => {
@@ -98,19 +158,42 @@ const renderedContent = computed(() => {
     </div>
 
     <div v-else-if="post" class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm sm:p-10">
-      <header>
-        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">{{ post.status }}</p>
-        <h1 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ post.title }}</h1>
-        <p
-          class="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 sm:text-sm"
-        >
-          <span class="text-slate-500">发布于</span>
-          <time v-if="publishedAtDateTime" :datetime="publishedAtDateTime" class="text-slate-700">{{ publishedAtText }}</time>
-          <span v-else class="text-slate-700">{{ publishedAtText }}</span>
-        </p>
-      </header>
+      <PostEditorForm
+        v-if="isEditing && editValue"
+        mode="edit"
+        :error="saveError"
+        :initial-value="editValue"
+        :saving="saving"
+        submit-label="保存"
+        @cancel="cancelEdit"
+        @submit="saveEdit"
+      />
 
-      <div class="article-content mt-8" v-html="renderedContent" />
+      <template v-else>
+        <header>
+          <div class="flex items-start justify-between gap-4">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">{{ post.status }}</p>
+            <button
+              v-if="auth.isAdmin.value"
+              class="focus-ring shrink-0 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              type="button"
+              @click="beginEdit"
+            >
+              编辑
+            </button>
+          </div>
+          <h1 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ post.title }}</h1>
+          <p
+            class="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 sm:text-sm"
+          >
+            <span class="text-slate-500">发布于</span>
+            <time v-if="publishedAtDateTime" :datetime="publishedAtDateTime" class="text-slate-700">{{ publishedAtText }}</time>
+            <span v-else class="text-slate-700">{{ publishedAtText }}</span>
+          </p>
+        </header>
+
+        <div class="article-content mt-8" v-html="renderedContent" />
+      </template>
     </div>
 
     <p v-else class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">未找到文章。</p>

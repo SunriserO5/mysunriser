@@ -50,10 +50,13 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
   /api/blog:
     post:
-      summary: Create or update post
+      summary: Create or update post (legacy admin-only)
       description: |
-        Upsert a blog post by request payload.
+        Legacy upsert endpoint retained for compatibility.
+        Requires an admin bearer token.
         This endpoint maps to backend insertOrUpdate behavior.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -70,6 +73,18 @@ paths:
                 example: Success!
         "400":
           description: Validation error or malformed request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
           content:
             application/json:
               schema:
@@ -96,7 +111,92 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /api/admin/posts/{slug}:
+    put:
+      summary: Update post as admin
+      description: Updates editable detail fields for an existing post. Requires an admin bearer token.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePostRequest"
+      responses:
+        "200":
+          description: Updated post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/admin/posts:
+    post:
+      summary: Create post as admin
+      description: Creates a new post. Requires an admin bearer token and rejects duplicate slugs.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePostRequest"
+      responses:
+        "200":
+          description: Created post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+        "400":
+          description: Validation error or duplicate slug
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     HealthResponse:
       type: object
@@ -140,24 +240,48 @@ components:
     CreatePostRequest:
       type: object
       description: |
-        Create or update payload for /api/blog.
+        Create payload for admin post creation and legacy /api/blog POST.
         Request field uses published_at, while read responses use publishAt.
       properties:
         slug:
           type: string
+          maxLength: 128
+          pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
         title:
           type: string
+          maxLength: 200
         content:
           type: string
         status:
           type: string
+          maxLength: 20
           description: Post status such as draft or published.
         published_at:
           type: string
           format: date-time
-          description: Defaults to current server time if omitted.
+          nullable: true
+          description: Admin create stores null when omitted; legacy /api/blog POST defaults to current server time.
       required:
         - slug
+        - title
+        - content
+        - status
+    UpdatePostRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        content:
+          type: string
+        status:
+          type: string
+          maxLength: 20
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
         - title
         - content
         - status

@@ -61,6 +61,17 @@ const router = createRouter({
       redirect: '/admin/users',
     },
     {
+      path: '/admin/posts/new',
+      name: 'admin-post-new',
+      component: () => import('../views/AdminPostNew.vue'),
+      meta: {
+        layout: 'default',
+        requiresAuth: true,
+        requiresRole: 'admin',
+        title: '新建文章 | MySunriser',
+      },
+    },
+    {
       path: '/admin/users',
       name: 'admin-users',
       component: () => import('../views/AdminUsers.vue'),

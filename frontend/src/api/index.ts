@@ -1,5 +1,7 @@
 import type {
   AdminCreateUserPayload,
+  AdminPostCreatePayload,
+  AdminPostUpdatePayload,
   AdminUser,
   AuthCredentials,
   AuthConfig,
@@ -124,6 +126,30 @@ export async function fetchPost(slug: string): Promise<PostDetail> {
   return {
     ...payload,
     publishAt: normalizePublishAt(payload),
+  }
+}
+
+export async function updateAdminPost(slug: string, payload: AdminPostUpdatePayload): Promise<PostDetail> {
+  const response = await request<RawPostDetail>(`/api/admin/posts/${encodeURIComponent(slug)}`, {
+    method: 'PUT',
+    body: payload,
+  })
+
+  return {
+    ...response,
+    publishAt: normalizePublishAt(response),
+  }
+}
+
+export async function createAdminPost(payload: AdminPostCreatePayload): Promise<PostDetail> {
+  const response = await request<RawPostDetail>('/api/admin/posts', {
+    method: 'POST',
+    body: payload,
+  })
+
+  return {
+    ...response,
+    publishAt: normalizePublishAt(response),
   }
 }
 

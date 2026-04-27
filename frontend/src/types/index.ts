@@ -21,6 +21,25 @@ export interface PostDetail {
   publishAt: string
 }
 
+export interface AdminPostUpdatePayload {
+  title: string
+  content: string
+  status: string
+  published_at: string | null
+}
+
+export interface AdminPostCreatePayload extends AdminPostUpdatePayload {
+  slug: string
+}
+
+export interface PostEditorFormValue {
+  slug: string
+  title: string
+  content: string
+  status: string
+  publishedAt: string
+}
+
 export interface ErrorResponse {
   code: number
   message: string

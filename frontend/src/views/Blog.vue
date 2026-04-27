@@ -4,11 +4,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchPage } from '../api'
 import Pagination from '../components/Pagination.vue'
 import PostCard from '../components/PostCard.vue'
+import { useAuth } from '../composables/useAuth'
 import { usePagination } from '../composables/usePagination'
 import type { PageItem } from '../types'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuth()
 
 const posts = ref<PageItem[]>([])
 const loading = ref(false)
@@ -85,11 +87,23 @@ watch(
 
 <template>
   <section class="fade-in">
-    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">BLOG</p>
-    <h1 class="mt-2 text-4xl font-bold tracking-tight text-slate-900">文章列表</h1>
-    <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-      聚焦代码实践、项目复盘与思考沉淀。
-    </p>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">BLOG</p>
+        <h1 class="mt-2 text-4xl font-bold tracking-tight text-slate-900">文章列表</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+          聚焦代码实践、项目复盘与思考沉淀。
+        </p>
+      </div>
+
+      <RouterLink
+        v-if="auth.isAdmin.value"
+        class="new-post-link focus-ring inline-flex w-fit rounded-md px-4 py-2 text-sm font-semibold transition"
+        :to="{ name: 'admin-post-new' }"
+      >
+        新建文章
+      </RouterLink>
+    </div>
   </section>
 
   <section class="mt-8">
@@ -120,5 +134,16 @@ watch(
 
 .retry-button:hover {
   background-color: var(--color-primary-bg-hover);
+}
+
+.new-post-link,
+.new-post-link:visited {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.new-post-link:hover {
+  background-color: #1e293b;
+  color: #ffffff;
 }
 </style>

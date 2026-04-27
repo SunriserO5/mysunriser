@@ -5,6 +5,7 @@ import com.mysunriser.backend.security.RestAccessDeniedHandler;
 import com.mysunriser.backend.security.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -47,9 +48,11 @@ public class SecurityConfig {
                     .accessDeniedHandler(restAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/health", "/api/page/**", "/api/blog/**").permitAll()
+                        .requestMatchers("/api/health", "/api/page/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/blog/**").permitAll()
                         .requestMatchers("/api/auth/config", "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/blog").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
