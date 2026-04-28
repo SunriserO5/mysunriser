@@ -82,7 +82,6 @@ deploy/logs/
 ############################
 out/
 **/out/
-backend/src/main/resources/application.properties
 blog_bak
 AGENTS.md
 backend/src/main/resources/application-local.properties
