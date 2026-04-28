@@ -24,6 +24,9 @@ public class UserAccount {
 
     private String status;
 
+    @TableField("token_version")
+    private Integer tokenVersion;
+
     @TableField("last_login_at")
     private LocalDateTime lastLoginAt;
 

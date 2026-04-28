@@ -1,8 +1,11 @@
 package com.mysunriser.backend.controller;
 
 import com.mysunriser.backend.dto.AdminAuthConfigRequest;
+import com.mysunriser.backend.dto.AdminSecurityConfigRequest;
+import com.mysunriser.backend.dto.AdminSecurityConfigResponse;
 import com.mysunriser.backend.dto.AuthConfigResponse;
 import com.mysunriser.backend.service.AppSettingService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,12 +24,26 @@ public class AdminSettingController {
 
     @GetMapping("/auth")
     public AuthConfigResponse getAuthConfig() {
-        return new AuthConfigResponse(appSettingService.isRegistrationEnabled());
+        return appSettingService.getPublicAuthConfig();
     }
 
     @PutMapping("/auth")
     public AuthConfigResponse updateAuthConfig(@RequestBody AdminAuthConfigRequest request) {
         boolean registrationEnabled = appSettingService.updateRegistrationEnabled(request.registrationEnabled());
-        return new AuthConfigResponse(registrationEnabled);
+        return new AuthConfigResponse(
+                registrationEnabled,
+                appSettingService.isTurnstileEnabled() && appSettingService.isTurnstileConfigured(),
+                appSettingService.getTurnstileSiteKey()
+        );
+    }
+
+    @GetMapping("/security")
+    public AdminSecurityConfigResponse getSecurityConfig() {
+        return appSettingService.getSecurityConfig();
+    }
+
+    @PutMapping("/security")
+    public AdminSecurityConfigResponse updateSecurityConfig(@Valid @RequestBody AdminSecurityConfigRequest request) {
+        return appSettingService.updateSecurityConfig(request);
     }
 }

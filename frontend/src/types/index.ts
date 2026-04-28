@@ -68,11 +68,14 @@ export interface AuthTokenResponse {
 
 export interface AuthConfig {
   registrationEnabled: boolean
+  turnstileEnabled: boolean
+  turnstileSiteKey: string
 }
 
 export interface AuthCredentials {
   username: string
   password: string
+  turnstileToken?: string
 }
 
 export interface AdminUser {
@@ -89,4 +92,21 @@ export interface AdminCreateUserPayload {
   username: string
   password: string
   role: AuthRole
+}
+
+export interface AdminSecurityConfig {
+  registrationEnabled: boolean
+  turnstileEnabled: boolean
+  turnstileConfigured: boolean
+  turnstileSiteKey: string
+  loginMaxAttempts: number
+  loginWindowSeconds: number
+  jwtExpireMinutes: number
+}
+
+export interface AdminSecurityConfigPayload {
+  registrationEnabled: boolean
+  turnstileEnabled: boolean
+  loginMaxAttempts: number
+  loginWindowSeconds: number
 }

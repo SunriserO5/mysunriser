@@ -2,6 +2,8 @@ import type {
   AdminCreateUserPayload,
   AdminPostCreatePayload,
   AdminPostUpdatePayload,
+  AdminSecurityConfig,
+  AdminSecurityConfigPayload,
   AdminUser,
   AuthCredentials,
   AuthConfig,
@@ -181,6 +183,17 @@ export function fetchAdminAuthConfig(): Promise<AuthConfig> {
 
 export function updateAdminAuthConfig(payload: AuthConfig): Promise<AuthConfig> {
   return request<AuthConfig>('/api/admin/settings/auth', {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function fetchAdminSecurityConfig(): Promise<AdminSecurityConfig> {
+  return request<AdminSecurityConfig>('/api/admin/settings/security')
+}
+
+export function updateAdminSecurityConfig(payload: AdminSecurityConfigPayload): Promise<AdminSecurityConfig> {
+  return request<AdminSecurityConfig>('/api/admin/settings/security', {
     method: 'PUT',
     body: payload,
   })

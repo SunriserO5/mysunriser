@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ApiError, fetchAuthConfig } from '../api'
+import TurnstileWidget from '../components/TurnstileWidget.vue'
 import { useAuth } from '../composables/useAuth'
 
 const auth = useAuth()
@@ -13,6 +14,10 @@ const form = reactive({
 })
 const error = ref<string | null>(null)
 const registrationEnabled = ref(false)
+const turnstileEnabled = ref(false)
+const turnstileSiteKey = ref('')
+const turnstileToken = ref('')
+const turnstileWidget = ref<{ reset: () => void } | null>(null)
 
 async function submit() {
   if (!registrationEnabled.value) {
@@ -22,14 +27,21 @@ async function submit() {
 
   error.value = null
 
+  if (turnstileEnabled.value && !turnstileToken.value) {
+    error.value = '请先完成人机验证'
+    return
+  }
+
   try {
     await auth.register({
       username: form.username,
       password: form.password,
+      turnstileToken: turnstileToken.value,
     })
     await router.replace('/')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '注册失败'
+    turnstileWidget.value?.reset()
   }
 }
 
@@ -37,12 +49,16 @@ async function loadAuthConfig() {
   try {
     const config = await fetchAuthConfig()
     registrationEnabled.value = config.registrationEnabled
+    turnstileEnabled.value = config.turnstileEnabled
+    turnstileSiteKey.value = config.turnstileSiteKey
 
     if (!config.registrationEnabled) {
       error.value = '注册已关闭'
     }
   } catch {
     registrationEnabled.value = false
+    turnstileEnabled.value = false
+    turnstileSiteKey.value = ''
     error.value = '注册已关闭'
   }
 }
@@ -83,6 +99,15 @@ onMounted(loadAuthConfig)
       <p v-if="error" class="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
         {{ error }}
       </p>
+
+      <TurnstileWidget
+        v-if="turnstileEnabled && turnstileSiteKey"
+        ref="turnstileWidget"
+        class="mt-4"
+        :site-key="turnstileSiteKey"
+        @expired="turnstileToken = ''"
+        @verified="turnstileToken = $event"
+      />
 
       <button
         class="focus-ring mt-5 w-full rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"

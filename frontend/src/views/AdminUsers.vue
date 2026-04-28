@@ -3,20 +3,15 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import {
   ApiError,
   createAdminUser,
-  fetchAdminAuthConfig,
   fetchAdminUsers,
   resetAdminUserPassword,
   setAdminUserEnabled,
-  updateAdminAuthConfig,
 } from '../api'
 import type { AdminUser, AuthRole } from '../types'
 
 const users = ref<AdminUser[]>([])
-const registrationEnabled = ref(false)
 const loading = ref(false)
-const settingsLoading = ref(false)
 const saving = ref(false)
-const settingsSaving = ref(false)
 const actionId = ref<number | null>(null)
 const error = ref<string | null>(null)
 const success = ref<string | null>(null)
@@ -47,39 +42,6 @@ async function loadUsers() {
     error.value = toMessage(err, '账号列表加载失败')
   } finally {
     loading.value = false
-  }
-}
-
-async function loadAuthConfig() {
-  settingsLoading.value = true
-  error.value = null
-
-  try {
-    const config = await fetchAdminAuthConfig()
-    registrationEnabled.value = config.registrationEnabled
-  } catch (err) {
-    error.value = toMessage(err, '注册开关加载失败')
-  } finally {
-    settingsLoading.value = false
-  }
-}
-
-async function toggleRegistration() {
-  const next = !registrationEnabled.value
-  settingsSaving.value = true
-  error.value = null
-  success.value = null
-
-  try {
-    const config = await updateAdminAuthConfig({
-      registrationEnabled: next,
-    })
-    registrationEnabled.value = config.registrationEnabled
-    success.value = config.registrationEnabled ? '注册已开启' : '注册已关闭'
-  } catch (err) {
-    error.value = toMessage(err, '注册开关更新失败')
-  } finally {
-    settingsSaving.value = false
   }
 }
 
@@ -163,7 +125,6 @@ function formatDate(value: string | null): string {
 
 onMounted(() => {
   void loadUsers()
-  void loadAuthConfig()
 })
 </script>
 
@@ -186,31 +147,6 @@ onMounted(() => {
 
     <div class="mt-6 grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
       <div class="space-y-6">
-        <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900">注册开关</h2>
-              <p class="mt-1 text-sm text-slate-500">
-                当前状态：{{ registrationEnabled ? '允许公开注册' : '关闭公开注册' }}
-              </p>
-            </div>
-
-            <button
-              class="focus-ring relative inline-flex h-7 w-12 shrink-0 rounded-full border border-transparent transition disabled:cursor-not-allowed disabled:opacity-60"
-              :class="registrationEnabled ? 'bg-emerald-500' : 'bg-slate-300'"
-              :aria-pressed="registrationEnabled"
-              :disabled="settingsLoading || settingsSaving"
-              type="button"
-              @click="toggleRegistration"
-            >
-              <span
-                class="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition"
-                :class="registrationEnabled ? 'left-5' : 'left-0.5'"
-              />
-            </button>
-          </div>
-        </section>
-
         <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-lg font-semibold text-slate-900">创建账号</h2>
         <form class="mt-4 space-y-4" @submit.prevent="submitCreate">

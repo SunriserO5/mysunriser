@@ -10,7 +10,11 @@ public record AdminCreateUserRequest(
         String username,
 
         @NotBlank(message = "password is required")
-        @Size(min = 6, max = 72, message = "password length must be between 6 and 72")
+        @Size(min = 10, max = 72, message = "password length must be between 10 and 72")
+        @Pattern(
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
+                message = "password must include letters and numbers"
+        )
         String password,
 
         @Pattern(regexp = "(?i)admin|user", message = "role must be admin or user")

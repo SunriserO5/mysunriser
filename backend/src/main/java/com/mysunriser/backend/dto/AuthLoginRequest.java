@@ -7,6 +7,8 @@ public record AuthLoginRequest(
         String username,
 
         @NotBlank(message = "password is required")
-        String password
+        String password,
+
+        String turnstileToken
 ) {
 }

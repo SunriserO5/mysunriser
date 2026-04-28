@@ -44,6 +44,7 @@ public class AdminUserService {
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setRole(normalizeRole(request.role()));
         user.setStatus("active");
+        user.setTokenVersion(0);
 
         userDao.insert(user);
         return toResponse(userDao.selectById(user.getId()));
@@ -56,6 +57,7 @@ public class AdminUserService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setTokenVersion(nextTokenVersion(user));
         userDao.updateById(user);
     }
 
@@ -93,5 +95,9 @@ public class AdminUserService {
         }
 
         return normalized;
+    }
+
+    private int nextTokenVersion(UserAccount user) {
+        return (user.getTokenVersion() == null ? 0 : user.getTokenVersion()) + 1;
     }
 }

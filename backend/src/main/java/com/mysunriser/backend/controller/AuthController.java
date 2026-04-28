@@ -8,6 +8,8 @@ import com.mysunriser.backend.dto.AuthTokenResponse;
 import com.mysunriser.backend.dto.Codes;
 import com.mysunriser.backend.exception.BizException;
 import com.mysunriser.backend.service.AuthService;
+import com.mysunriser.backend.service.ClientIpService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,19 +25,21 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final ClientIpService clientIpService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, ClientIpService clientIpService) {
         this.authService = authService;
+        this.clientIpService = clientIpService;
     }
 
     @PostMapping("/register")
-    public AuthTokenResponse register(@Valid @RequestBody AuthRegisterRequest request) {
-        return authService.register(request);
+    public AuthTokenResponse register(@Valid @RequestBody AuthRegisterRequest request, HttpServletRequest httpRequest) {
+        return authService.register(request, clientIpService.resolve(httpRequest));
     }
 
     @PostMapping("/login")
-    public AuthTokenResponse login(@Valid @RequestBody AuthLoginRequest request) {
-        return authService.login(request);
+    public AuthTokenResponse login(@Valid @RequestBody AuthLoginRequest request, HttpServletRequest httpRequest) {
+        return authService.login(request, clientIpService.resolve(httpRequest));
     }
 
     @GetMapping("/config")

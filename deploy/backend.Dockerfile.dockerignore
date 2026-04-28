@@ -1,0 +1,13 @@
+.git
+.DS_Store
+AGENTS.md
+backend/.idea
+backend/target
+frontend
+node_modules
+docs
+deploy
+blog_bak
+**/*.log
+.env
+.env.*

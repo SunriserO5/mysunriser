@@ -1,0 +1,14 @@
+.git
+.DS_Store
+AGENTS.md
+backend
+frontend/node_modules
+frontend/dist
+node_modules
+docs
+deploy/*
+blog_bak
+**/*.log
+.env
+.env.*
+!deploy/Caddyfile

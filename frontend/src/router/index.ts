@@ -82,6 +82,17 @@ const router = createRouter({
         title: '账号管理 | MySunriser',
       },
     },
+    {
+      path: '/admin/security',
+      name: 'admin-security',
+      component: () => import('../views/AdminSecurity.vue'),
+      meta: {
+        layout: 'admin',
+        requiresAuth: true,
+        requiresRole: 'admin',
+        title: '安全设置 | MySunriser',
+      },
+    },
   ],
 })
 

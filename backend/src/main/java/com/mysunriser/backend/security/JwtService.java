@@ -20,20 +20,22 @@ public class JwtService {
     private final long expireMillis;
 
     public JwtService(
-            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.secret:}") String secret,
             @Value("${jwt.expireMinutes}") long expireMinutes
     ) {
+        validateSecret(secret);
         this.secretKey = buildSecretKey(secret);
         this.expireMillis = expireMinutes * 60_000L;
     }
 
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String role, int tokenVersion) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expireMillis);
 
         return Jwts.builder()
                 .subject(username)
                 .claim("role", role)
+                .claim("tokenVersion", tokenVersion)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(secretKey)
@@ -58,12 +60,31 @@ public class JwtService {
         return role == null ? "user" : String.valueOf(role);
     }
 
+    public int extractTokenVersion(String token) {
+        Object tokenVersion = extractAllClaims(token).get("tokenVersion");
+        if (tokenVersion instanceof Number number) {
+            return number.intValue();
+        }
+
+        return -1;
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    private void validateSecret(String secret) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET must be configured");
+        }
+
+        if ("change-me-in-production".equals(secret) || secret.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 characters and not use the default value");
+        }
     }
 
     private SecretKey buildSecretKey(String secret) {
