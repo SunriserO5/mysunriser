@@ -110,3 +110,12 @@ export interface AdminSecurityConfigPayload {
   loginMaxAttempts: number
   loginWindowSeconds: number
 }
+
+export interface FooterSettings {
+  githubEnabled: boolean
+  githubUrl: string
+  xEnabled: boolean
+  xUrl: string
+}
+
+export type FooterSettingsPayload = FooterSettings

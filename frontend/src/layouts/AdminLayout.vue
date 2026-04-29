@@ -24,6 +24,13 @@ const route = useRoute()
         >
           安全设置
         </RouterLink>
+        <RouterLink
+          to="/admin/footer"
+          class="admin-menu-link mt-1 block rounded-md px-3 py-2 text-sm font-semibold transition"
+          :class="{ 'is-active': route.path.startsWith('/admin/footer') }"
+        >
+          页脚链接
+        </RouterLink>
       </aside>
 
       <main class="min-w-0">

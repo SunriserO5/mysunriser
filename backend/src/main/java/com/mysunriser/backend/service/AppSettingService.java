@@ -4,9 +4,16 @@ import com.mysunriser.backend.Dao.AppSettingDao;
 import com.mysunriser.backend.dto.AdminSecurityConfigRequest;
 import com.mysunriser.backend.dto.AdminSecurityConfigResponse;
 import com.mysunriser.backend.dto.AuthConfigResponse;
+import com.mysunriser.backend.dto.Codes;
+import com.mysunriser.backend.dto.FooterSettingsRequest;
+import com.mysunriser.backend.dto.FooterSettingsResponse;
 import com.mysunriser.backend.entity.AppSetting;
+import com.mysunriser.backend.exception.BizException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @Service
 public class AppSettingService {
@@ -15,6 +22,10 @@ public class AppSettingService {
     private static final String TURNSTILE_ENABLED_KEY = "security.turnstile-enabled";
     private static final String LOGIN_MAX_ATTEMPTS_KEY = "security.login-max-attempts";
     private static final String LOGIN_WINDOW_SECONDS_KEY = "security.login-window-seconds";
+    private static final String FOOTER_GITHUB_ENABLED_KEY = "footer.github-enabled";
+    private static final String FOOTER_GITHUB_URL_KEY = "footer.github-url";
+    private static final String FOOTER_X_ENABLED_KEY = "footer.x-enabled";
+    private static final String FOOTER_X_URL_KEY = "footer.x-url";
 
     private final AppSettingDao appSettingDao;
     private final boolean defaultRegistrationEnabled;
@@ -107,6 +118,30 @@ public class AppSettingService {
         return getSecurityConfig();
     }
 
+    public FooterSettingsResponse getFooterSettings() {
+        String githubUrl = sanitizeStoredUrl(getString(FOOTER_GITHUB_URL_KEY, ""));
+        String xUrl = sanitizeStoredUrl(getString(FOOTER_X_URL_KEY, ""));
+
+        return new FooterSettingsResponse(
+                getBoolean(FOOTER_GITHUB_ENABLED_KEY, false),
+                githubUrl,
+                getBoolean(FOOTER_X_ENABLED_KEY, false),
+                xUrl
+        );
+    }
+
+    public FooterSettingsResponse updateFooterSettings(FooterSettingsRequest request) {
+        String githubUrl = normalizeExternalUrl(request.githubUrl(), "githubUrl");
+        String xUrl = normalizeExternalUrl(request.xUrl(), "xUrl");
+
+        appSettingDao.upsert(FOOTER_GITHUB_ENABLED_KEY, Boolean.toString(request.githubEnabled()));
+        appSettingDao.upsert(FOOTER_GITHUB_URL_KEY, githubUrl);
+        appSettingDao.upsert(FOOTER_X_ENABLED_KEY, Boolean.toString(request.xEnabled()));
+        appSettingDao.upsert(FOOTER_X_URL_KEY, xUrl);
+
+        return getFooterSettings();
+    }
+
     private boolean getBoolean(String key, boolean defaultValue) {
         AppSetting setting = appSettingDao.selectById(key);
 
@@ -128,6 +163,49 @@ public class AppSettingService {
             return Integer.parseInt(setting.getSettingValue());
         } catch (NumberFormatException e) {
             return defaultValue;
+        }
+    }
+
+    private String getString(String key, String defaultValue) {
+        AppSetting setting = appSettingDao.selectById(key);
+
+        if (setting == null || setting.getSettingValue() == null) {
+            return defaultValue;
+        }
+
+        return setting.getSettingValue().trim();
+    }
+
+    private String normalizeExternalUrl(String value, String fieldName) {
+        String normalized = value == null ? "" : value.trim();
+
+        if (normalized.isBlank()) {
+            return "";
+        }
+
+        if (!isHttpUrl(normalized)) {
+            throw new BizException(Codes.VALIDATION_ERROR, fieldName + " must be an http or https URL");
+        }
+
+        return normalized;
+    }
+
+    private String sanitizeStoredUrl(String value) {
+        String normalized = value == null ? "" : value.trim();
+        return isHttpUrl(normalized) ? normalized : "";
+    }
+
+    private boolean isHttpUrl(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+
+        try {
+            URI uri = new URI(value);
+            String scheme = uri.getScheme();
+            return uri.getHost() != null && ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme));
+        } catch (URISyntaxException e) {
+            return false;
         }
     }
 }

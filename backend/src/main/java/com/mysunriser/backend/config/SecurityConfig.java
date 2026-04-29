@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/health", "/api/page/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/blog/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/settings/footer").permitAll()
                         .requestMatchers("/api/auth/config", "/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/blog").hasRole("ADMIN")

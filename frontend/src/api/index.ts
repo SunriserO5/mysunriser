@@ -10,6 +10,8 @@ import type {
   AuthTokenResponse,
   AuthUser,
   ErrorResponse,
+  FooterSettings,
+  FooterSettingsPayload,
   HealthResponse,
   PageResponse,
   PostDetail,
@@ -194,6 +196,23 @@ export function fetchAdminSecurityConfig(): Promise<AdminSecurityConfig> {
 
 export function updateAdminSecurityConfig(payload: AdminSecurityConfigPayload): Promise<AdminSecurityConfig> {
   return request<AdminSecurityConfig>('/api/admin/settings/security', {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function fetchFooterSettings(): Promise<FooterSettings> {
+  return request<FooterSettings>('/api/settings/footer', {
+    auth: false,
+  })
+}
+
+export function fetchAdminFooterSettings(): Promise<FooterSettings> {
+  return request<FooterSettings>('/api/admin/settings/footer')
+}
+
+export function updateAdminFooterSettings(payload: FooterSettingsPayload): Promise<FooterSettings> {
+  return request<FooterSettings>('/api/admin/settings/footer', {
     method: 'PUT',
     body: payload,
   })

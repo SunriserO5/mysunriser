@@ -93,6 +93,17 @@ const router = createRouter({
         title: '安全设置 | MySunriser',
       },
     },
+    {
+      path: '/admin/footer',
+      name: 'admin-footer',
+      component: () => import('../views/AdminFooterSettings.vue'),
+      meta: {
+        layout: 'admin',
+        requiresAuth: true,
+        requiresRole: 'admin',
+        title: '页脚链接 | MySunriser',
+      },
+    },
   ],
 })
 

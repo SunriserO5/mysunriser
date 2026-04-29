@@ -4,6 +4,8 @@ import com.mysunriser.backend.dto.AdminAuthConfigRequest;
 import com.mysunriser.backend.dto.AdminSecurityConfigRequest;
 import com.mysunriser.backend.dto.AdminSecurityConfigResponse;
 import com.mysunriser.backend.dto.AuthConfigResponse;
+import com.mysunriser.backend.dto.FooterSettingsRequest;
+import com.mysunriser.backend.dto.FooterSettingsResponse;
 import com.mysunriser.backend.service.AppSettingService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,5 +47,15 @@ public class AdminSettingController {
     @PutMapping("/security")
     public AdminSecurityConfigResponse updateSecurityConfig(@Valid @RequestBody AdminSecurityConfigRequest request) {
         return appSettingService.updateSecurityConfig(request);
+    }
+
+    @GetMapping("/footer")
+    public FooterSettingsResponse getFooterSettings() {
+        return appSettingService.getFooterSettings();
+    }
+
+    @PutMapping("/footer")
+    public FooterSettingsResponse updateFooterSettings(@Valid @RequestBody FooterSettingsRequest request) {
+        return appSettingService.updateFooterSettings(request);
     }
 }
