@@ -5,11 +5,14 @@ import com.mysunriser.backend.dto.CreatePostRequest;
 import com.mysunriser.backend.dto.UpdatePostRequest;
 import com.mysunriser.backend.service.postservice;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,5 +33,11 @@ public class AdminPostController {
     @PutMapping("/{slug}")
     public PostResponse updatePost(@PathVariable String slug, @Valid @RequestBody UpdatePostRequest request) {
         return postservice.updatePost(slug, request);
+    }
+
+    @DeleteMapping("/{slug}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePost(@PathVariable String slug) {
+        postservice.deletePost(slug);
     }
 }

@@ -10,17 +10,24 @@ const props = withDefaults(
     saving?: boolean
     error?: string | null
     submitLabel?: string
+    dangerLabel?: string
+    dangerLoadingLabel?: string
+    dangerLoading?: boolean
   }>(),
   {
     saving: false,
     error: null,
     submitLabel: '保存',
+    dangerLabel: '',
+    dangerLoadingLabel: '',
+    dangerLoading: false,
   },
 )
 
 const emit = defineEmits<{
   submit: [value: PostEditorFormValue]
   cancel: []
+  danger: []
 }>()
 
 const form = reactive<PostEditorFormValue>({
@@ -349,7 +356,17 @@ function formatSize(bytes: number) {
       {{ error }}
     </p>
 
-    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+    <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+      <button
+        v-if="dangerLabel"
+        class="focus-ring rounded-md border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:text-rose-300"
+        :disabled="saving || dangerLoading"
+        type="button"
+        @click="emit('danger')"
+      >
+        {{ dangerLoading ? dangerLoadingLabel || dangerLabel : dangerLabel }}
+      </button>
+      <div class="hidden flex-1 sm:block" />
       <button
         class="focus-ring rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-400"
         :disabled="saving"

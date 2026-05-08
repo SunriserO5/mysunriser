@@ -216,6 +216,12 @@ export async function createAdminPost(payload: AdminPostCreatePayload): Promise<
   }
 }
 
+export function deleteAdminPost(slug: string): Promise<void> {
+  return request<void>(`/api/admin/posts/${encodeURIComponent(slug)}`, {
+    method: 'DELETE',
+  })
+}
+
 export function uploadAdminMedia(file: File, accessLevel: MediaAccessLevel): Promise<MediaUploadResponse> {
   const formData = new FormData()
   formData.set('file', file)
