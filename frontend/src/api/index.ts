@@ -1,5 +1,6 @@
 import type {
   AdminCreateUserPayload,
+  AdminMediaListResponse,
   AdminPostCreatePayload,
   AdminPostUpdatePayload,
   AdminSecurityConfig,
@@ -13,6 +14,8 @@ import type {
   FooterSettings,
   FooterSettingsPayload,
   HealthResponse,
+  MediaAccessLevel,
+  MediaUploadResponse,
   PageResponse,
   PostDetail,
 } from '../types'
@@ -80,6 +83,62 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
   if (response.status === 204) {
     return undefined as T
+  }
+
+  return (await response.json()) as T
+}
+
+async function requestBlob(path: string, options: Omit<RequestOptions, 'body'> = {}): Promise<Blob> {
+  const headers = new Headers(options.headers)
+
+  if (options.auth !== false) {
+    const token = readStoredToken()
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`)
+    }
+  }
+
+  const response = await fetch(`${BASE}${path}`, {
+    method: options.method ?? 'GET',
+    headers,
+  })
+
+  if (!response.ok) {
+    let payload: ErrorResponse | undefined
+    try {
+      payload = (await response.json()) as ErrorResponse
+    } catch {
+      payload = undefined
+    }
+
+    throw new ApiError(payload?.message ?? `Request failed with status ${response.status}`, response.status, payload)
+  }
+
+  return response.blob()
+}
+
+async function requestForm<T>(path: string, formData: FormData): Promise<T> {
+  const headers = new Headers()
+  const token = readStoredToken()
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const response = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  })
+
+  if (!response.ok) {
+    let payload: ErrorResponse | undefined
+    try {
+      payload = (await response.json()) as ErrorResponse
+    } catch {
+      payload = undefined
+    }
+
+    throw new ApiError(payload?.message ?? `Request failed with status ${response.status}`, response.status, payload)
   }
 
   return (await response.json()) as T
@@ -155,6 +214,33 @@ export async function createAdminPost(payload: AdminPostCreatePayload): Promise<
     ...response,
     publishAt: normalizePublishAt(response),
   }
+}
+
+export function uploadAdminMedia(file: File, accessLevel: MediaAccessLevel): Promise<MediaUploadResponse> {
+  const formData = new FormData()
+  formData.set('file', file)
+  formData.set('accessLevel', accessLevel)
+
+  return requestForm<MediaUploadResponse>('/api/admin/media', formData)
+}
+
+export function fetchAdminMedia(page = 1, pageSize = 20): Promise<AdminMediaListResponse> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+
+  return request<AdminMediaListResponse>(`/api/admin/media?${params.toString()}`)
+}
+
+export function deleteAdminMedia(id: number): Promise<void> {
+  return request<void>(`/api/admin/media/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+export function fetchMediaBlob(path: string): Promise<Blob> {
+  return requestBlob(path)
 }
 
 export function login(credentials: AuthCredentials): Promise<AuthTokenResponse> {

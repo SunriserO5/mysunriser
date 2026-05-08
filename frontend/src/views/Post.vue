@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import DOMPurify from 'dompurify'
 import MarkdownIt from 'markdown-it'
-import { ApiError, updateAdminPost } from '../api'
+import { ApiError, fetchMediaBlob, updateAdminPost } from '../api'
 import PostEditorForm from '../components/PostEditorForm.vue'
 import { useAuth } from '../composables/useAuth'
 import { usePost } from '../composables/usePost'
@@ -27,6 +27,10 @@ const isEditing = ref(false)
 const saving = ref(false)
 const saveError = ref<string | null>(null)
 const editValue = ref<PostEditorFormValue | null>(null)
+const mediaReadError = ref<string | null>(null)
+const articleContentRef = ref<HTMLElement | null>(null)
+const mediaObjectUrls = ref<string[]>([])
+const viewerImage = ref<{ src: string; alt: string } | null>(null)
 
 watch(
   slug,
@@ -145,6 +149,139 @@ const renderedContent = computed(() => {
 
   return DOMPurify.sanitize(html)
 })
+
+watch(
+  [renderedContent, isEditing],
+  () => {
+    if (!isEditing.value) {
+      void nextTick(hydrateMediaImages)
+    }
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  revokeMediaObjectUrls()
+  window.removeEventListener('keydown', handleViewerKeydown)
+})
+
+watch(viewerImage, (next) => {
+  if (next) {
+    window.addEventListener('keydown', handleViewerKeydown)
+  } else {
+    window.removeEventListener('keydown', handleViewerKeydown)
+  }
+})
+
+function mediaPathFromUrl(value: string | null) {
+  if (!value) {
+    return null
+  }
+
+  try {
+    const url = new URL(value, window.location.origin)
+    if (url.origin !== window.location.origin) {
+      return null
+    }
+
+    return /^\/api\/media\/\d+\/(?:content|download)$/.test(url.pathname) ? url.pathname : null
+  } catch {
+    return null
+  }
+}
+
+async function hydrateMediaImages() {
+  const container = articleContentRef.value
+  if (!container) {
+    return
+  }
+
+  revokeMediaObjectUrls()
+  const images = Array.from(container.querySelectorAll<HTMLImageElement>('img'))
+
+  await Promise.all(
+    images.map(async (image) => {
+      const mediaPath = mediaPathFromUrl(image.getAttribute('src'))
+      if (!mediaPath) {
+        return
+      }
+
+      image.dataset.mediaPath = mediaPath
+
+      try {
+        const blob = await fetchMediaBlob(mediaPath)
+        const objectUrl = URL.createObjectURL(blob)
+        mediaObjectUrls.value.push(objectUrl)
+        image.src = objectUrl
+      } catch {
+        image.classList.add('media-image-error')
+        image.alt = image.alt || '图片加载失败'
+      }
+    }),
+  )
+}
+
+function revokeMediaObjectUrls() {
+  for (const objectUrl of mediaObjectUrls.value) {
+    URL.revokeObjectURL(objectUrl)
+  }
+  mediaObjectUrls.value = []
+}
+
+function handleArticleClick(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof Element)) {
+    return
+  }
+
+  const image = target.closest('img')
+  if (image instanceof HTMLImageElement) {
+    event.preventDefault()
+    viewerImage.value = {
+      src: image.currentSrc || image.src,
+      alt: image.alt || '文章图片',
+    }
+    mediaReadError.value = null
+    return
+  }
+
+  const link = target.closest('a')
+  if (link instanceof HTMLAnchorElement) {
+    const mediaPath = mediaPathFromUrl(link.getAttribute('href'))
+    if (mediaPath?.endsWith('/download')) {
+      event.preventDefault()
+      void downloadMedia(mediaPath, link.textContent?.trim() || 'attachment')
+    }
+  }
+}
+
+async function downloadMedia(path: string, filename: string) {
+  mediaReadError.value = null
+
+  try {
+    const blob = await fetchMediaBlob(path)
+    const objectUrl = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = objectUrl
+    anchor.download = filename
+    document.body.appendChild(anchor)
+    anchor.click()
+    anchor.remove()
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
+  } catch (err) {
+    mediaReadError.value = err instanceof ApiError ? err.message : '附件下载失败'
+  }
+}
+
+function closeViewer() {
+  viewerImage.value = null
+}
+
+function handleViewerKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    closeViewer()
+  }
+}
 </script>
 
 <template>
@@ -192,11 +329,31 @@ const renderedContent = computed(() => {
           </p>
         </header>
 
-        <div class="article-content mt-8" v-html="renderedContent" />
+        <p v-if="mediaReadError" class="mt-6 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          {{ mediaReadError }}
+        </p>
+        <div ref="articleContentRef" class="article-content mt-8" @click="handleArticleClick" v-html="renderedContent" />
       </template>
     </div>
 
     <p v-else class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">未找到文章。</p>
+
+    <div
+      v-if="viewerImage"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4"
+      role="dialog"
+      aria-modal="true"
+      @click.self="closeViewer"
+    >
+      <button
+        class="focus-ring absolute right-4 top-4 rounded-md bg-white/95 px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-white"
+        type="button"
+        @click="closeViewer"
+      >
+        关闭
+      </button>
+      <img class="max-h-[88vh] max-w-full rounded-md object-contain shadow-2xl" :alt="viewerImage.alt" :src="viewerImage.src" />
+    </div>
   </article>
 </template>
 
@@ -279,6 +436,21 @@ const renderedContent = computed(() => {
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
+}
+
+.article-content :deep(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.5rem auto;
+  border-radius: 0.5rem;
+  cursor: zoom-in;
+}
+
+.article-content :deep(.media-image-error) {
+  min-height: 6rem;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
 }
 
 .article-content :deep(pre) {

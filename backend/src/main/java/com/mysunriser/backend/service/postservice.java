@@ -12,6 +12,7 @@ import com.mysunriser.backend.entity.post;
 import com.mysunriser.backend.exception.BizException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -19,6 +20,9 @@ public class postservice {
 
     @Autowired
     private PostDao postDao;
+
+    @Autowired
+    private MediaReferenceService mediaReferenceService;
 
     public PostResponse getPostBySlug(String slug){
         post postEntity = postDao.getBySlug(slug);
@@ -35,13 +39,21 @@ public class postservice {
         return PageResponse.of(pageNum, PageSize, result.getRecords());
     }
 
+    @Transactional
     public String initPost(post newpost){
         boolean statues = postDao.insertOrUpdate(newpost);
         if(!statues)return "Create Failed";
-        else return "Success!";
+
+        post savedPost = postDao.getBySlug(newpost.getSlug());
+        if (savedPost != null) {
+            mediaReferenceService.rebuildReferences(savedPost.getId(), savedPost.getContent());
+        }
+
+        return "Success!";
 
     }
 
+    @Transactional
     public PostResponse createPost(CreatePostRequest request) {
         String slug = request.getSlug().trim();
         if (postDao.getBySlug(slug) != null) {
@@ -54,9 +66,13 @@ public class postservice {
             throw new BizException(Codes.INTERNAL_ERROR, "post create failed");
         }
 
-        return PostResponse.of(postDao.getBySlug(slug));
+        post savedPost = postDao.getBySlug(slug);
+        mediaReferenceService.rebuildReferences(savedPost.getId(), savedPost.getContent());
+
+        return PostResponse.of(savedPost);
     }
 
+    @Transactional
     public PostResponse updatePost(String slug, UpdatePostRequest request) {
         post existingPost = postDao.getBySlug(slug);
         if (existingPost == null) {
@@ -73,6 +89,9 @@ public class postservice {
             throw new BizException(Codes.INTERNAL_ERROR, "post update failed");
         }
 
-        return PostResponse.of(postDao.getBySlug(slug));
+        post savedPost = postDao.getBySlug(slug);
+        mediaReferenceService.rebuildReferences(savedPost.getId(), savedPost.getContent());
+
+        return PostResponse.of(savedPost);
     }
 }

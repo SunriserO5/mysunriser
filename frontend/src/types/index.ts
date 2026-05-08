@@ -40,6 +40,33 @@ export interface PostEditorFormValue {
   publishedAt: string
 }
 
+export type MediaAccessLevel = 'PUBLIC' | 'AUTHENTICATED'
+
+export type MediaAssetType = 'IMAGE' | 'ATTACHMENT'
+
+export interface MediaAsset {
+  id: number
+  assetType: MediaAssetType
+  originalFilename: string
+  mimeType: string
+  sizeBytes: number
+  accessLevel: MediaAccessLevel
+  uploadedBy: string
+  createdAt: string
+  contentUrl: string
+  downloadUrl: string
+  markdown: string
+}
+
+export type MediaUploadResponse = MediaAsset
+
+export interface AdminMediaListResponse {
+  page: number
+  pageSize: number
+  total: number
+  items: MediaAsset[]
+}
+
 export interface ErrorResponse {
   code: number
   message: string
