@@ -39,6 +39,7 @@ public class GlobalExceptionHandler {
             case Codes.NOT_FOUND -> HttpStatus.NOT_FOUND;
             case Codes.TOO_MANY_REQUESTS -> HttpStatus.TOO_MANY_REQUESTS;
             case Codes.VALIDATION_ERROR -> HttpStatus.BAD_REQUEST;
+            case Codes.INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
             default -> HttpStatus.BAD_REQUEST;
         };
     }

@@ -29,3 +29,16 @@ docker compose up -d --build
 ```
 
 详细步骤见 [Docker 部署指南](docs/deployment-docker.md)。
+
+## 本地开发
+### 前端
+```bash
+cd frontend
+npm run build
+npm run dev
+```
+### 后端
+```bash
+cd backend
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```

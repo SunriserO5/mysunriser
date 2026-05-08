@@ -83,6 +83,17 @@ const router = createRouter({
       },
     },
     {
+      path: '/admin/files',
+      name: 'admin-files',
+      component: () => import('../views/AdminFiles.vue'),
+      meta: {
+        layout: 'admin',
+        requiresAuth: true,
+        requiresRole: 'admin',
+        title: '文件管理 | MySunriser',
+      },
+    },
+    {
       path: '/admin/security',
       name: 'admin-security',
       component: () => import('../views/AdminSecurity.vue'),
