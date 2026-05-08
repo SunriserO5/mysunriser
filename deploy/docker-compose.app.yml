@@ -15,7 +15,12 @@ services:
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
       LOGIN_MAX_ATTEMPTS: ${LOGIN_MAX_ATTEMPTS:-5}
       LOGIN_WINDOW_SECONDS: ${LOGIN_WINDOW_SECONDS:-900}
+      MEDIA_STORAGE_ROOT: ${MEDIA_STORAGE_ROOT:-/data/media}
+      MEDIA_IMAGE_MAX_BYTES: ${MEDIA_IMAGE_MAX_BYTES:-52428800}
+      MEDIA_ATTACHMENT_MAX_BYTES: ${MEDIA_ATTACHMENT_MAX_BYTES:-209715200}
       TZ: Asia/Shanghai
+    volumes:
+      - media-data:${MEDIA_STORAGE_ROOT:-/data/media}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     expose:
@@ -38,5 +43,6 @@ services:
       - caddy-config:/config
 
 volumes:
+  media-data:
   caddy-data:
   caddy-config:

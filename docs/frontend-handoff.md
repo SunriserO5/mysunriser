@@ -1,12 +1,12 @@
 # 前端构建交接文档
 
-> 更新时间：2026-04-27
+> 更新时间：2026-05-08
 
 ---
 
 ## 一、项目背景
 
-MySunriser 是一个个人博客项目，后端 API、登录鉴权、管理员账号管理和文章创建/编辑能力已可用，前端已进入可联调、可继续迭代状态。
+MySunriser 是一个个人博客项目，后端 API、登录鉴权、管理员账号管理、文章管理、媒体上传与文件管理能力已可用，前端已进入可联调、可继续迭代状态。
 
 **技术栈：**
 - 前端：Vue 3, Vite, TypeScript, Tailwind CSS v4
@@ -29,6 +29,12 @@ MySunriser 是一个个人博客项目，后端 API、登录鉴权、管理员�
 | `/api/blog/{slug}` | GET | 获取单篇博文 | `slug` (path, string) | `PostResponse` |
 | `/api/admin/posts` | POST | 管理员新建文章 | Bearer token + JSON Body: `slug`, `title`, `content`, `status`, `published_at`(可选) | `PostResponse` |
 | `/api/admin/posts/{slug}` | PUT | 管理员更新文章详情字段 | Bearer token + `slug` + JSON Body: `title`, `content`, `status`, `published_at`(可选) | `PostResponse` |
+| `/api/admin/posts/{slug}` | DELETE | 管理员删除文章 | Bearer token + `slug` | `204 No Content` |
+| `/api/admin/media` | POST | 管理员上传图片/附件 | Bearer token + multipart: `file`, `accessLevel` | `MediaAssetResponse` |
+| `/api/admin/media` | GET | 管理员分页查看媒体库 | Bearer token + `page`, `pageSize` | `AdminMediaListResponse` |
+| `/api/admin/media/{id}` | DELETE | 管理员删除未引用媒体 | Bearer token + `id` | `204 No Content` |
+| `/api/media/{id}/content` | GET | 读取媒体内容 | 可匿名/登录/管理员，按媒体权限与已发布文章引用判断 | 文件流 |
+| `/api/media/{id}/download` | GET | 下载媒体 | 同上 | 文件流 |
 | `/api/blog` | POST | 兼容保留的管理员 upsert 入口 | Bearer token + JSON Body: `slug`, `title`, `content`, `status`, `published_at`(可选) | `text/plain` (`Success!` / `Create Failed`) |
 
 ### 响应结构（与当前前端类型一致）
@@ -72,11 +78,13 @@ MySunriser 是一个个人博客项目，后端 API、登录鉴权、管理员�
 ```
 
 ### 注意事项
-- 公开读取接口：`GET /api/page`、`GET /api/blog/{slug}`。
+- 公开读取接口：`GET /api/page`、`GET /api/blog/{slug}`；匿名与普通 user 只返回 `Published` 文章，admin 可读取所有状态文章。
 - 管理员写入接口：`/api/admin/**` 和 `POST /api/blog`，需要 Bearer JWT 且角色为 `admin`。
 - CSRF 已禁用。
 - 前端新建文章使用 `POST /api/admin/posts`，会拒绝重复 slug，避免误覆盖。
 - 前端编辑文章使用 `PUT /api/admin/posts/{slug}`，只更新详情页字段：标题、正文、状态、发布时间。
+- 前端删除文章使用 `DELETE /api/admin/posts/{slug}`，编辑态提供红色按钮与二次确认。
+- 媒体访问规则：admin 永远可访问；非 admin 只能访问已被 `Published` 文章引用的媒体；`AUTHENTICATED` 媒体要求任意登录用户。
 - `POST /api/blog` 仍采用 legacy upsert 语义，仅为兼容保留，不建议新前端功能继续使用。
 
 ---
@@ -94,6 +102,8 @@ MySunriser 是一个个人博客项目，后端 API、登录鉴权、管理员�
 - [x] 公共组件完成（`Navbar`, `Footer`, `PostCard`, `Pagination`, `PostEditorForm`）
 - [x] 页面视图完成（`Home`, `Blog`, `Post`, `About`, `Login`, `Register`, `AdminUsers`, `AdminPostNew`, `Forbidden`）
 - [x] 管理员文章新建与详情页在线编辑已落地
+- [x] 文章图片/附件上传、文章详情媒体展示、附件下载已落地
+- [x] 后台文件管理页已落地（上传、分页、多选、批量删除）
 - [x] Vite 模板默认文件清理完成（`HelloWorld.vue`、示例 assets）
 
 ### 当前可用程度
@@ -116,6 +126,9 @@ MySunriser 是一个个人博客项目，后端 API、登录鉴权、管理员�
 | `/register` | `Register.vue` | `DefaultLayout` | 已实现 |
 | `/admin/posts/new` | `AdminPostNew.vue` | `DefaultLayout` | admin-only |
 | `/admin/users` | `AdminUsers.vue` | `AdminLayout` | admin-only |
+| `/admin/files` | `AdminFiles.vue` | `AdminLayout` | admin-only |
+| `/admin/security` | `AdminSecurity.vue` | `AdminLayout` | admin-only |
+| `/admin/footer` | `AdminFooterSettings.vue` | `AdminLayout` | admin-only |
 | `/403` | `Forbidden.vue` | `DefaultLayout` | 已实现 |
 
 通过路由 `meta.layout` 在 `App.vue` 中切换布局，首页与内容页已解耦。
@@ -149,6 +162,9 @@ frontend/src/
 │   ├── About.vue
 │   ├── Login.vue
 │   ├── Register.vue
+│   ├── AdminFiles.vue
+│   ├── AdminFooterSettings.vue
+│   ├── AdminSecurity.vue
 │   ├── AdminUsers.vue
 │   ├── AdminPostNew.vue
 │   └── Forbidden.vue
@@ -194,7 +210,14 @@ frontend/src/
 - 管理员可在 `/admin/users` 管理账号与注册开关。
 - 管理员在 `/blog` 可进入 `/admin/posts/new` 新建文章。
 - 管理员在 `/blog/:slug` 可切换到同页编辑模式，编辑标题、正文、状态、发布时间。
+- 管理员在编辑态可删除文章，删除按钮与取消/保存同排，并有二次确认。
 - 新建与编辑共用 `PostEditorForm.vue`，日期转换和空表单初始化在 `utils/postEditor.ts`。
+
+### 7) 媒体与文件管理
+- 文章编辑器可上传图片/附件，上传后插入 Markdown。
+- 文章详情页媒体图片通过带 token 的 fetch 加载；未登录访问受限图片会显示明确提示。
+- 文章详情页支持图片点击查看器和附件下载。
+- 后台 `/admin/files` 支持上传、分页查看、多选、批量删除未引用文件。
 
 ---
 
@@ -212,6 +235,7 @@ frontend/src/
 | `docs/frontend-acceptance.md` | ✅ | 已补充最小验收文档 |
 | `frontend/src/components/PostEditorForm.vue` | ✅ | 文章新建/编辑共用表单 |
 | `frontend/src/views/AdminPostNew.vue` | ✅ | 管理员新建文章页面 |
+| `frontend/src/views/AdminFiles.vue` | ✅ | 管理员文件管理页面 |
 
 ---
 
@@ -233,7 +257,7 @@ npm run dev
 ### 推荐后续路线
 
 1. 内容管理能力
-   - 可继续补充摘要 `summary` 编辑、草稿列表筛选、删除/下线文章等后台能力。
+   - 可继续补充摘要 `summary` 编辑、草稿列表筛选、发布/下线快捷操作等后台能力。
 2. SEO 增强
    - 完善 Meta 信息（description、og tags）。
 3. 体验增强

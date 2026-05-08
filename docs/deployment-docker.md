@@ -53,6 +53,10 @@ TURNSTILE_SECRET_KEY=你的TurnstileSecretKey
 LOGIN_MAX_ATTEMPTS=5
 LOGIN_WINDOW_SECONDS=900
 
+MEDIA_STORAGE_ROOT=/data/media
+MEDIA_IMAGE_MAX_BYTES=52428800
+MEDIA_ATTACHMENT_MAX_BYTES=209715200
+
 APP_DOMAIN=你的域名
 ```
 
@@ -63,6 +67,8 @@ APP_DOMAIN=你的域名
 - `JWT_SECRET` 必须至少 32 位，不能使用示例值。
 - `SPRING_DATASOURCE_PASSWORD` 要和 `MYSQL_PASSWORD` 一致。
 - Compose 内网连接 MySQL 时使用 `allowPublicKeyRetrieval=true`；如果以后改为公网/云数据库，应优先启用 TLS。
+- `MEDIA_STORAGE_ROOT` 是后端本地媒体库目录。Compose 默认将命名卷挂载到 `/data/media`，避免容器重建后丢失上传文件。
+- `MEDIA_IMAGE_MAX_BYTES` 默认 `50MB`，`MEDIA_ATTACHMENT_MAX_BYTES` 默认 `200MB`。
 
 ## 三、启动与更新
 
@@ -114,6 +120,7 @@ docker compose down
 ```
 
 不要随意执行 `docker compose down -v`，它会删除 MySQL 数据卷。
+项目还会使用 `media-data` 卷保存上传图片和附件，`down -v` 同样会删除媒体文件。
 如果使用 `docker-compose.app.yml`，停止时也要带上同一个文件名：
 
 ```bash
