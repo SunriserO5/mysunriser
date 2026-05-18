@@ -150,16 +150,26 @@ export interface HealthResponse {
 export type AuthRole = 'admin' | 'user'
 
 export interface AuthUser {
+  id: number
   username: string
   role: AuthRole
   status: string
+  email: string
+  emailVerified: boolean
+  nickname: string
+  avatarUrl: string
 }
 
 export interface AuthTokenResponse {
   token: string
   expireMinutes: number
+  id: number
   username: string
   role: AuthRole
+  email: string
+  emailVerified: boolean
+  nickname: string
+  avatarUrl: string
 }
 
 export interface AuthConfig {
@@ -172,6 +182,38 @@ export interface AuthCredentials {
   username: string
   password: string
   turnstileToken?: string
+}
+
+export interface AuthRegisterPayload extends AuthCredentials {
+  email: string
+}
+
+export interface MessageResponse {
+  message: string
+}
+
+export interface PasswordForgotPayload {
+  email: string
+}
+
+export interface PasswordResetPayload {
+  token: string
+  newPassword: string
+}
+
+export interface AccountProfile extends AuthUser {}
+
+export interface AccountProfilePayload {
+  nickname: string
+}
+
+export interface AccountPasswordPayload {
+  currentPassword: string
+  newPassword: string
+}
+
+export interface AccountEmailPayload {
+  email: string
 }
 
 export interface AdminUser {

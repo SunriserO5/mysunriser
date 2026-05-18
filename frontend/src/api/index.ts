@@ -7,8 +7,13 @@ import type {
   AdminSecurityConfigPayload,
   AdminToolPayload,
   AdminUser,
+  AccountEmailPayload,
+  AccountPasswordPayload,
+  AccountProfile,
+  AccountProfilePayload,
   AuthCredentials,
   AuthConfig,
+  AuthRegisterPayload,
   AuthTokenResponse,
   AuthUser,
   ErrorResponse,
@@ -17,7 +22,10 @@ import type {
   HealthResponse,
   MediaAccessLevel,
   MediaUploadResponse,
+  MessageResponse,
   PageResponse,
+  PasswordForgotPayload,
+  PasswordResetPayload,
   PostDetail,
   ToolItem,
   ToolListResponse,
@@ -26,7 +34,7 @@ import type {
 } from '../types'
 
 const BASE = ''
-export const AUTH_TOKEN_STORAGE_KEY = 'mysunriser.auth.token'
+let accessToken: string | null = null
 
 class ApiError extends Error {
   public readonly status: number
@@ -48,14 +56,34 @@ type RequestOptions = {
 }
 
 function readStoredToken(): string | null {
-  if (typeof window === 'undefined') {
-    return null
+  return accessToken
+}
+
+export function setAccessToken(nextToken: string | null) {
+  accessToken = nextToken
+}
+
+async function refreshAccessToken(): Promise<AuthTokenResponse> {
+  const response = await fetch(`${BASE}/api/auth/refresh`, {
+    method: 'POST',
+    credentials: 'same-origin',
+  })
+
+  if (!response.ok) {
+    setAccessToken(null)
+    throw new ApiError(`Request failed with status ${response.status}`, response.status)
   }
 
-  return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+  const payload = (await response.json()) as AuthTokenResponse
+  setAccessToken(payload.token)
+  return payload
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return requestOnce<T>(path, options, true)
+}
+
+async function requestOnce<T>(path: string, options: RequestOptions, allowRefresh: boolean): Promise<T> {
   const headers = new Headers(options.headers)
 
   if (options.body !== undefined && !headers.has('Content-Type')) {
@@ -73,9 +101,15 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     method: options.method ?? 'GET',
     headers,
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    credentials: 'same-origin',
   })
 
   if (!response.ok) {
+    if (response.status === 401 && allowRefresh && options.auth !== false && path !== '/api/auth/refresh') {
+      await refreshAccessToken()
+      return requestOnce<T>(path, options, false)
+    }
+
     let payload: ErrorResponse | undefined
     try {
       payload = (await response.json()) as ErrorResponse
@@ -106,6 +140,7 @@ async function requestBlob(path: string, options: Omit<RequestOptions, 'body'> =
   const response = await fetch(`${BASE}${path}`, {
     method: options.method ?? 'GET',
     headers,
+    credentials: 'same-origin',
   })
 
   if (!response.ok) {
@@ -133,6 +168,7 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
     method: 'POST',
     headers,
     body: formData,
+    credentials: 'same-origin',
   })
 
   if (!response.ok) {
@@ -311,10 +347,42 @@ export function login(credentials: AuthCredentials): Promise<AuthTokenResponse> 
   })
 }
 
-export function register(credentials: AuthCredentials): Promise<AuthTokenResponse> {
-  return request<AuthTokenResponse>('/api/auth/register', {
+export function requestRegistration(payload: AuthRegisterPayload): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/auth/register/request', {
     method: 'POST',
-    body: credentials,
+    body: payload,
+    auth: false,
+  })
+}
+
+export function confirmRegistration(token: string): Promise<AuthTokenResponse> {
+  return request<AuthTokenResponse>('/api/auth/register/confirm', {
+    method: 'POST',
+    body: { token },
+    auth: false,
+  })
+}
+
+export function requestPasswordReset(payload: PasswordForgotPayload): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/auth/password/forgot', {
+    method: 'POST',
+    body: payload,
+    auth: false,
+  })
+}
+
+export function resetPassword(payload: PasswordResetPayload): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/auth/password/reset', {
+    method: 'POST',
+    body: payload,
+    auth: false,
+  })
+}
+
+export function confirmEmailChange(token: string): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/auth/email-change/confirm', {
+    method: 'POST',
+    body: { token },
     auth: false,
   })
 }
@@ -369,8 +437,37 @@ export function fetchMe(): Promise<AuthUser> {
 }
 
 export function logout(): Promise<{ message: string }> {
-  return request<{ message: string }>('/api/auth/logout', {
+  return request<MessageResponse>('/api/auth/logout', {
     method: 'POST',
+  })
+}
+
+export function refreshSession(): Promise<AuthTokenResponse> {
+  return refreshAccessToken()
+}
+
+export function fetchAccountProfile(): Promise<AccountProfile> {
+  return request<AccountProfile>('/api/account/profile')
+}
+
+export function updateAccountProfile(payload: AccountProfilePayload): Promise<AccountProfile> {
+  return request<AccountProfile>('/api/account/profile', {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function updateAccountPassword(payload: AccountPasswordPayload): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/account/password', {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function requestAccountEmailChange(payload: AccountEmailPayload): Promise<MessageResponse> {
+  return request<MessageResponse>('/api/account/email', {
+    method: 'PUT',
+    body: payload,
   })
 }
 

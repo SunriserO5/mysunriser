@@ -53,7 +53,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/settings/footer").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tools/**").permitAll()
-                        .requestMatchers("/api/auth/config", "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(
+                                "/api/auth/config",
+                                "/api/auth/register/request",
+                                "/api/auth/register/confirm",
+                                "/api/auth/login",
+                                "/api/auth/refresh",
+                                "/api/auth/password/forgot",
+                                "/api/auth/password/reset",
+                                "/api/auth/email-change/confirm"
+                        ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/blog").hasRole("ADMIN")
                         .anyRequest().authenticated())

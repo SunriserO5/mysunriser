@@ -9,6 +9,9 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface UserDao extends BaseMapper<UserAccount> {
 
-    @Select("SELECT id, username, password_hash, role, status, token_version, last_login_at, created_at, updated_at FROM app_user WHERE username = #{username} LIMIT 1")
+    @Select("SELECT id, username, email, email_verified_at, nickname, avatar_url, password_hash, role, status, token_version, last_login_at, created_at, updated_at FROM app_user WHERE username = #{username} LIMIT 1")
     UserAccount findByUsername(@Param("username") String username);
+
+    @Select("SELECT id, username, email, email_verified_at, nickname, avatar_url, password_hash, role, status, token_version, last_login_at, created_at, updated_at FROM app_user WHERE email = #{email} LIMIT 1")
+    UserAccount findByEmail(@Param("email") String email);
 }

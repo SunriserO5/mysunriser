@@ -89,6 +89,19 @@ onMounted(() => {
           </RouterLink>
         </li>
         <li v-if="auth.isAuthenticated.value">
+          <RouterLink
+            to="/account"
+            class="nav-link rounded-full border border-transparent px-3 py-1.5 transition"
+            :class="
+              isActive('/account')
+                ? 'nav-link-active border-slate-800 bg-slate-900 text-slate-50 shadow-md'
+                : 'text-slate-900'
+            "
+          >
+            账户
+          </RouterLink>
+        </li>
+        <li v-if="auth.isAuthenticated.value">
           <button
             class="nav-link rounded-full border border-transparent px-3 py-1.5 transition"
             type="button"

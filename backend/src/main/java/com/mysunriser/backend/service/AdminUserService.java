@@ -18,10 +18,12 @@ public class AdminUserService {
 
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public AdminUserService(UserDao userDao, PasswordEncoder passwordEncoder) {
+    public AdminUserService(UserDao userDao, PasswordEncoder passwordEncoder, AuthService authService) {
         this.userDao = userDao;
         this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
 
     public List<AdminUserItemResponse> listUsers() {
@@ -59,6 +61,7 @@ public class AdminUserService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setTokenVersion(nextTokenVersion(user));
         userDao.updateById(user);
+        authService.revokeRefreshTokensForUser(user.getId());
     }
 
     public AdminUserItemResponse updateUserStatus(Long userId, boolean enabled) {
