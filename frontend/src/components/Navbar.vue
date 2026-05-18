@@ -19,6 +19,7 @@ const auth = useAuth()
 const links = [
   { name: '首页', to: '/' },
   { name: '博客', to: '/blog' },
+  { name: '工具', to: '/tools' },
   { name: '关于', to: '/about' },
 ]
 

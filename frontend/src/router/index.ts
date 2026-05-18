@@ -33,6 +33,24 @@ const router = createRouter({
       meta: { layout: 'default', title: '文章 | MySunriser' },
     },
     {
+      path: '/tools',
+      name: 'tools',
+      component: () => import('../views/Tools.vue'),
+      meta: { layout: 'default', title: '在线小工具 | MySunriser' },
+    },
+    {
+      path: '/tools/video-download',
+      name: 'video-download-tool',
+      component: () => import('../views/VideoDownloadTool.vue'),
+      meta: { layout: 'default', title: '在线视频解析下载器 | MySunriser' },
+    },
+    {
+      path: '/tools/:slug',
+      name: 'tool-detail',
+      component: () => import('../views/ToolDetail.vue'),
+      meta: { layout: 'default', title: '工具 | MySunriser' },
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/About.vue'),
@@ -91,6 +109,17 @@ const router = createRouter({
         requiresAuth: true,
         requiresRole: 'admin',
         title: '文件管理 | MySunriser',
+      },
+    },
+    {
+      path: '/admin/tools',
+      name: 'admin-tools',
+      component: () => import('../views/AdminTools.vue'),
+      meta: {
+        layout: 'admin',
+        requiresAuth: true,
+        requiresRole: 'admin',
+        title: '工具管理 | MySunriser',
       },
     },
     {

@@ -25,6 +25,13 @@ const route = useRoute()
           文件
         </RouterLink>
         <RouterLink
+          to="/admin/tools"
+          class="admin-menu-link mt-1 block rounded-md px-3 py-2 text-sm font-semibold transition"
+          :class="{ 'is-active': route.path.startsWith('/admin/tools') }"
+        >
+          工具
+        </RouterLink>
+        <RouterLink
           to="/admin/security"
           class="admin-menu-link mt-1 block rounded-md px-3 py-2 text-sm font-semibold transition"
           :class="{ 'is-active': route.path.startsWith('/admin/security') }"

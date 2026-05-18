@@ -1,19 +1,23 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchHealth, fetchPage } from '../api'
+import { fetchHealth, fetchPage, fetchTools } from '../api'
 import PostCard from '../components/PostCard.vue'
-import type { HealthResponse, PageItem } from '../types'
+import ToolCard from '../components/ToolCard.vue'
+import type { HealthResponse, PageItem, ToolItem } from '../types'
 
 const health = ref<HealthResponse | null>(null)
 const latestPosts = ref<PageItem[]>([])
+const latestTools = ref<ToolItem[]>([])
 const postsLoading = ref(false)
 const postsError = ref<string | null>(null)
+const toolsError = ref<string | null>(null)
 
 async function loadHomeData() {
   postsLoading.value = true
   postsError.value = null
+  toolsError.value = null
 
-  const [healthResult, postResult] = await Promise.allSettled([fetchHealth(), fetchPage(1, 3)])
+  const [healthResult, postResult, toolResult] = await Promise.allSettled([fetchHealth(), fetchPage(1, 3), fetchTools(1, 3)])
 
   if (healthResult.status === 'fulfilled') {
     health.value = healthResult.value
@@ -23,6 +27,12 @@ async function loadHomeData() {
     latestPosts.value = postResult.value.items
   } else {
     postsError.value = postResult.reason instanceof Error ? postResult.reason.message : '最新文章加载失败'
+  }
+
+  if (toolResult.status === 'fulfilled') {
+    latestTools.value = toolResult.value.items
+  } else {
+    toolsError.value = toolResult.reason instanceof Error ? toolResult.reason.message : '工具加载失败'
   }
 
   postsLoading.value = false
@@ -82,6 +92,23 @@ onMounted(loadHomeData)
     <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <PostCard v-for="item in latestPosts" :key="item.slug" :item="item" />
     </div>
+  </section>
+
+  <section class="mt-12">
+    <div class="mb-5 flex items-end justify-between">
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">在线小工具</h2>
+      <RouterLink to="/tools" class="text-sm font-semibold text-orange-600 hover:text-orange-500">查看全部 →</RouterLink>
+    </div>
+
+    <p v-if="postsLoading" class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">正在加载工具...</p>
+    <p v-else-if="toolsError" class="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+      {{ toolsError }}
+    </p>
+
+    <div v-else-if="latestTools.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <ToolCard v-for="item in latestTools" :key="item.slug" :item="item" />
+    </div>
+    <p v-else class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">暂无可用工具。</p>
   </section>
 </template>
 

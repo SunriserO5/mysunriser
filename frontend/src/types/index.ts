@@ -12,6 +12,75 @@ export interface PageResponse {
   items: PageItem[]
 }
 
+export type ToolStatus = 'Draft' | 'Published'
+
+export type ToolEntryType = 'INTERNAL' | 'EXTERNAL'
+
+export type ToolAccessLevel = 'PUBLIC' | 'AUTHENTICATED' | 'ADMIN'
+
+export interface ToolItem {
+  id: number
+  slug: string
+  title: string
+  summary: string
+  status: ToolStatus
+  entryType: ToolEntryType
+  routePath: string
+  externalUrl: string
+  accessLevel: ToolAccessLevel
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ToolListResponse {
+  page: number
+  pageSize: number
+  total: number
+  items: ToolItem[]
+}
+
+export interface AdminToolPayload {
+  slug: string
+  title: string
+  summary: string
+  status: ToolStatus
+  entryType: ToolEntryType
+  routePath: string
+  externalUrl: string
+  accessLevel: ToolAccessLevel
+  sortOrder: number
+}
+
+export interface VideoDownloadExtractPayload {
+  url: string
+}
+
+export interface VideoDownloadFormat {
+  quality: number | null
+  videoUrl: string | null
+  videoExt: string | null
+  videoSize: number | null
+  audioUrl: string | null
+  audioExt: string | null
+  audioSize: number | null
+  separate: number | null
+  qualityNote: string | null
+}
+
+export interface VideoDownloadMedia {
+  mediaType: string | null
+  resourceUrl: string | null
+  previewUrl: string | null
+  formats: VideoDownloadFormat[]
+  headers: Record<string, string>
+}
+
+export interface VideoDownloadExtractResponse {
+  text: string | null
+  medias: VideoDownloadMedia[]
+}
+
 export interface PostDetail {
   id: number
   slug: string

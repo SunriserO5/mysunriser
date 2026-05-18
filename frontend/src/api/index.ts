@@ -5,6 +5,7 @@ import type {
   AdminPostUpdatePayload,
   AdminSecurityConfig,
   AdminSecurityConfigPayload,
+  AdminToolPayload,
   AdminUser,
   AuthCredentials,
   AuthConfig,
@@ -18,6 +19,10 @@ import type {
   MediaUploadResponse,
   PageResponse,
   PostDetail,
+  ToolItem,
+  ToolListResponse,
+  VideoDownloadExtractPayload,
+  VideoDownloadExtractResponse,
 } from '../types'
 
 const BASE = ''
@@ -190,6 +195,55 @@ export async function fetchPost(slug: string): Promise<PostDetail> {
     ...payload,
     publishAt: normalizePublishAt(payload),
   }
+}
+
+export function fetchTools(page: number, pageSize: number): Promise<ToolListResponse> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+
+  return request<ToolListResponse>(`/api/tools?${params.toString()}`)
+}
+
+export function fetchTool(slug: string): Promise<ToolItem> {
+  return request<ToolItem>(`/api/tools/${encodeURIComponent(slug)}`)
+}
+
+export function fetchAdminTools(page = 1, pageSize = 100): Promise<ToolListResponse> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+
+  return request<ToolListResponse>(`/api/admin/tools?${params.toString()}`)
+}
+
+export function createAdminTool(payload: AdminToolPayload): Promise<ToolItem> {
+  return request<ToolItem>('/api/admin/tools', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function updateAdminTool(slug: string, payload: AdminToolPayload): Promise<ToolItem> {
+  return request<ToolItem>(`/api/admin/tools/${encodeURIComponent(slug)}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function deleteAdminTool(slug: string): Promise<void> {
+  return request<void>(`/api/admin/tools/${encodeURIComponent(slug)}`, {
+    method: 'DELETE',
+  })
+}
+
+export function extractVideoDownload(payload: VideoDownloadExtractPayload): Promise<VideoDownloadExtractResponse> {
+  return request<VideoDownloadExtractResponse>('/api/tools/video-download/extract', {
+    method: 'POST',
+    body: payload,
+  })
 }
 
 export async function updateAdminPost(slug: string, payload: AdminPostUpdatePayload): Promise<PostDetail> {
