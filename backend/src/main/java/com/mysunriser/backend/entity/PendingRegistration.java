@@ -9,8 +9,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("app_user")
-public class UserAccount {
+@TableName("pending_registration")
+public class PendingRegistration {
 
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -19,30 +19,18 @@ public class UserAccount {
 
     private String email;
 
-    @TableField("email_verified_at")
-    private LocalDateTime emailVerifiedAt;
-
-    private String nickname;
-
-    @TableField("avatar_url")
-    private String avatarUrl;
-
     @TableField("password_hash")
     private String passwordHash;
 
-    private String role;
+    @TableField("token_hash")
+    private String tokenHash;
 
-    private String status;
+    @TableField("expires_at")
+    private LocalDateTime expiresAt;
 
-    @TableField("token_version")
-    private Integer tokenVersion;
-
-    @TableField("last_login_at")
-    private LocalDateTime lastLoginAt;
+    @TableField("consumed_at")
+    private LocalDateTime consumedAt;
 
     @TableField("created_at")
     private LocalDateTime createdAt;
-
-    @TableField("updated_at")
-    private LocalDateTime updatedAt;
 }

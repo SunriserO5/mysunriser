@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { ApiError, fetchAuthConfig } from '../api'
 import TurnstileWidget from '../components/TurnstileWidget.vue'
 import { useAuth } from '../composables/useAuth'
 
 const auth = useAuth()
-const router = useRouter()
 
 const form = reactive({
   username: '',
+  email: '',
   password: '',
 })
 const error = ref<string | null>(null)
+const success = ref(false)
 const registrationEnabled = ref(false)
 const turnstileEnabled = ref(false)
 const turnstileSiteKey = ref('')
@@ -35,10 +35,11 @@ async function submit() {
   try {
     await auth.register({
       username: form.username,
+      email: form.email,
       password: form.password,
       turnstileToken: turnstileToken.value,
     })
-    await router.replace('/')
+    success.value = true
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '注册失败'
     turnstileWidget.value?.reset()
@@ -72,6 +73,10 @@ onMounted(loadAuthConfig)
     <h1 class="mt-2 text-3xl font-bold text-slate-900">注册</h1>
 
     <form class="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="submit">
+      <p v-if="success" class="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+        验证邮件已发送，请打开邮箱中的链接完成注册。
+      </p>
+
       <label class="block text-sm font-semibold text-slate-700" for="register-username">用户名</label>
       <input
         id="register-username"
@@ -84,6 +89,17 @@ onMounted(loadAuthConfig)
         type="text"
       />
 
+      <label class="mt-4 block text-sm font-semibold text-slate-700" for="register-email">邮箱</label>
+      <input
+        id="register-email"
+        v-model.trim="form.email"
+        class="focus-ring mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-orange-500 disabled:bg-slate-100"
+        autocomplete="email"
+        maxlength="254"
+        required
+        type="email"
+      />
+
       <label class="mt-4 block text-sm font-semibold text-slate-700" for="register-password">密码</label>
       <input
         id="register-password"
@@ -91,7 +107,7 @@ onMounted(loadAuthConfig)
         class="focus-ring mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-orange-500 disabled:bg-slate-100"
         autocomplete="new-password"
         maxlength="72"
-        minlength="6"
+        minlength="10"
         required
         type="password"
       />

@@ -69,6 +69,40 @@ const router = createRouter({
       meta: { layout: 'default', title: '注册 | MySunriser' },
     },
     {
+      path: '/register/confirm',
+      name: 'register-confirm',
+      component: () => import('../views/RegisterConfirm.vue'),
+      meta: { layout: 'default', title: '邮箱验证 | MySunriser' },
+    },
+    {
+      path: '/password/forgot',
+      name: 'password-forgot',
+      component: () => import('../views/ForgotPassword.vue'),
+      meta: { layout: 'default', title: '找回密码 | MySunriser' },
+    },
+    {
+      path: '/password/reset',
+      name: 'password-reset',
+      component: () => import('../views/ResetPassword.vue'),
+      meta: { layout: 'default', title: '重置密码 | MySunriser' },
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: () => import('../views/AccountSettings.vue'),
+      meta: {
+        layout: 'default',
+        requiresAuth: true,
+        title: '账户设置 | MySunriser',
+      },
+    },
+    {
+      path: '/account/email/confirm',
+      name: 'account-email-confirm',
+      component: () => import('../views/EmailChangeConfirm.vue'),
+      meta: { layout: 'default', title: '邮箱变更确认 | MySunriser' },
+    },
+    {
       path: '/403',
       name: 'forbidden',
       component: () => import('../views/Forbidden.vue'),

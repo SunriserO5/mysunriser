@@ -1,8 +1,13 @@
 package com.mysunriser.backend.dto;
 
 public record AuthMeResponse(
+        Long id,
         String username,
         String role,
-        String status
+        String status,
+        String email,
+        boolean emailVerified,
+        String nickname,
+        String avatarUrl
 ) {
 }

@@ -1,46 +1,42 @@
 import { computed, ref } from 'vue'
-import { AUTH_TOKEN_STORAGE_KEY, fetchMe, login as loginRequest, logout as logoutRequest, register as registerRequest } from '../api'
-import type { AuthCredentials, AuthTokenResponse, AuthUser } from '../types'
+import {
+  confirmRegistration as confirmRegistrationRequest,
+  fetchMe,
+  login as loginRequest,
+  logout as logoutRequest,
+  refreshSession,
+  requestRegistration as requestRegistrationRequest,
+  setAccessToken,
+} from '../api'
+import type { AuthCredentials, AuthRegisterPayload, AuthTokenResponse, AuthUser } from '../types'
 
-const token = ref<string | null>(readInitialToken())
+const token = ref<string | null>(null)
 const user = ref<AuthUser | null>(null)
 const ready = ref(false)
 const loading = ref(false)
 
-function readInitialToken(): string | null {
-  if (typeof window === 'undefined') {
-    return null
-  }
-
-  return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
-}
-
 function persistToken(nextToken: string | null) {
   token.value = nextToken
-
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  if (nextToken) {
-    window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, nextToken)
-  } else {
-    window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
-  }
+  setAccessToken(nextToken)
 }
 
 function applyTokenResponse(response: AuthTokenResponse) {
   persistToken(response.token)
   user.value = {
+    id: response.id,
     username: response.username,
     role: response.role,
     status: 'active',
+    email: response.email,
+    emailVerified: response.emailVerified,
+    nickname: response.nickname,
+    avatarUrl: response.avatarUrl,
   }
   ready.value = true
 }
 
 async function restore(): Promise<void> {
-  if (ready.value || !token.value) {
+  if (ready.value && user.value) {
     ready.value = true
     return
   }
@@ -48,6 +44,8 @@ async function restore(): Promise<void> {
   loading.value = true
 
   try {
+    const response = await refreshSession()
+    applyTokenResponse(response)
     user.value = await fetchMe()
   } catch {
     persistToken(null)
@@ -68,11 +66,25 @@ async function login(credentials: AuthCredentials): Promise<void> {
   }
 }
 
-async function register(credentials: AuthCredentials): Promise<void> {
+async function register(credentials: AuthRegisterPayload): Promise<void> {
+  await requestRegistration(credentials)
+}
+
+async function requestRegistration(credentials: AuthRegisterPayload): Promise<void> {
   loading.value = true
 
   try {
-    applyTokenResponse(await registerRequest(credentials))
+    await requestRegistrationRequest(credentials)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function confirmRegistration(tokenValue: string): Promise<void> {
+  loading.value = true
+
+  try {
+    applyTokenResponse(await confirmRegistrationRequest(tokenValue))
   } finally {
     loading.value = false
   }
@@ -103,6 +115,8 @@ export function useAuth() {
     restore,
     login,
     register,
+    requestRegistration,
+    confirmRegistration,
     logout,
   }
 }
