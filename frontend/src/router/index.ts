@@ -51,6 +51,18 @@ const router = createRouter({
       meta: { layout: 'default', title: '工具 | MySunriser' },
     },
     {
+      path: '/projects',
+      name: 'projects',
+      component: () => import('../views/Projects.vue'),
+      meta: { layout: 'default', title: '项目 | MySunriser' },
+    },
+    {
+      path: '/projects/:slug',
+      name: 'project',
+      component: () => import('../views/Project.vue'),
+      meta: { layout: 'default', title: '项目 | MySunriser' },
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/About.vue'),
@@ -154,6 +166,17 @@ const router = createRouter({
         requiresAuth: true,
         requiresRole: 'admin',
         title: '工具管理 | MySunriser',
+      },
+    },
+    {
+      path: '/admin/projects',
+      name: 'admin-projects',
+      component: () => import('../views/AdminProjects.vue'),
+      meta: {
+        layout: 'admin',
+        requiresAuth: true,
+        requiresRole: 'admin',
+        title: '项目管理 | MySunriser',
       },
     },
     {

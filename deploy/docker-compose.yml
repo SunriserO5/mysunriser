@@ -36,6 +36,9 @@ services:
       MEDIA_STORAGE_ROOT: ${MEDIA_STORAGE_ROOT:-/data/media}
       MEDIA_IMAGE_MAX_BYTES: ${MEDIA_IMAGE_MAX_BYTES:-52428800}
       MEDIA_ATTACHMENT_MAX_BYTES: ${MEDIA_ATTACHMENT_MAX_BYTES:-209715200}
+      IIILAB_EXTRACT_URL: ${IIILAB_EXTRACT_URL:-https://service.iiilab.com/openapi/extract}
+      IIILAB_CLIENT_ID: ${IIILAB_CLIENT_ID:-}
+      IIILAB_CLIENT_SECRET: ${IIILAB_CLIENT_SECRET:-}
       TZ: Asia/Shanghai
     volumes:
       - media-data:${MEDIA_STORAGE_ROOT:-/data/media}

@@ -40,6 +40,43 @@ export interface ToolListResponse {
   items: ToolItem[]
 }
 
+export type ProjectStatus = 'Draft' | 'Published'
+
+export interface ProjectItem {
+  id: number
+  slug: string
+  title: string
+  summary: string
+  status: ProjectStatus
+  repoOwner: string
+  repoName: string
+  repoUrl: string
+  sortOrder: number
+  readmeMarkdown: string
+  readmeError: string
+  readmeCachedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProjectListResponse {
+  page: number
+  pageSize: number
+  total: number
+  items: ProjectItem[]
+}
+
+export interface AdminProjectPayload {
+  slug: string
+  title: string
+  summary: string
+  status: ProjectStatus
+  repoOwner: string
+  repoName: string
+  repoUrl: string
+  sortOrder: number
+}
+
 export interface AdminToolPayload {
   slug: string
   title: string

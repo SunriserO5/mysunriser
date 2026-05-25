@@ -1,23 +1,32 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { fetchHealth, fetchPage, fetchTools } from '../api'
+import { fetchHealth, fetchPage, fetchProjects, fetchTools } from '../api'
 import PostCard from '../components/PostCard.vue'
+import ProjectCard from '../components/ProjectCard.vue'
 import ToolCard from '../components/ToolCard.vue'
-import type { HealthResponse, PageItem, ToolItem } from '../types'
+import type { HealthResponse, PageItem, ProjectItem, ToolItem } from '../types'
 
 const health = ref<HealthResponse | null>(null)
 const latestPosts = ref<PageItem[]>([])
 const latestTools = ref<ToolItem[]>([])
+const latestProjects = ref<ProjectItem[]>([])
 const postsLoading = ref(false)
 const postsError = ref<string | null>(null)
 const toolsError = ref<string | null>(null)
+const projectsError = ref<string | null>(null)
 
 async function loadHomeData() {
   postsLoading.value = true
   postsError.value = null
   toolsError.value = null
+  projectsError.value = null
 
-  const [healthResult, postResult, toolResult] = await Promise.allSettled([fetchHealth(), fetchPage(1, 3), fetchTools(1, 3)])
+  const [healthResult, postResult, toolResult, projectResult] = await Promise.allSettled([
+    fetchHealth(),
+    fetchPage(1, 3),
+    fetchTools(1, 3),
+    fetchProjects(1, 3),
+  ])
 
   if (healthResult.status === 'fulfilled') {
     health.value = healthResult.value
@@ -33,6 +42,12 @@ async function loadHomeData() {
     latestTools.value = toolResult.value.items
   } else {
     toolsError.value = toolResult.reason instanceof Error ? toolResult.reason.message : '工具加载失败'
+  }
+
+  if (projectResult.status === 'fulfilled') {
+    latestProjects.value = projectResult.value.items
+  } else {
+    projectsError.value = projectResult.reason instanceof Error ? projectResult.reason.message : '项目加载失败'
   }
 
   postsLoading.value = false
@@ -109,6 +124,23 @@ onMounted(loadHomeData)
       <ToolCard v-for="item in latestTools" :key="item.slug" :item="item" />
     </div>
     <p v-else class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">暂无可用工具。</p>
+  </section>
+
+  <section class="mt-12">
+    <div class="mb-5 flex items-end justify-between">
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">项目</h2>
+      <RouterLink to="/projects" class="text-sm font-semibold text-orange-600 hover:text-orange-500">查看全部 →</RouterLink>
+    </div>
+
+    <p v-if="postsLoading" class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">正在加载项目...</p>
+    <p v-else-if="projectsError" class="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+      {{ projectsError }}
+    </p>
+
+    <div v-else-if="latestProjects.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <ProjectCard v-for="item in latestProjects" :key="item.slug" :item="item" />
+    </div>
+    <p v-else class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">暂无项目。</p>
   </section>
 </template>
 

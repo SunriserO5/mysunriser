@@ -3,6 +3,7 @@ import type {
   AdminMediaListResponse,
   AdminPostCreatePayload,
   AdminPostUpdatePayload,
+  AdminProjectPayload,
   AdminSecurityConfig,
   AdminSecurityConfigPayload,
   AdminToolPayload,
@@ -27,6 +28,8 @@ import type {
   PasswordForgotPayload,
   PasswordResetPayload,
   PostDetail,
+  ProjectItem,
+  ProjectListResponse,
   ToolItem,
   ToolListResponse,
   VideoDownloadExtractPayload,
@@ -244,6 +247,48 @@ export function fetchTools(page: number, pageSize: number): Promise<ToolListResp
 
 export function fetchTool(slug: string): Promise<ToolItem> {
   return request<ToolItem>(`/api/tools/${encodeURIComponent(slug)}`)
+}
+
+export function fetchProjects(page: number, pageSize: number): Promise<ProjectListResponse> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+
+  return request<ProjectListResponse>(`/api/projects?${params.toString()}`)
+}
+
+export function fetchProject(slug: string): Promise<ProjectItem> {
+  return request<ProjectItem>(`/api/projects/${encodeURIComponent(slug)}`)
+}
+
+export function fetchAdminProjects(page = 1, pageSize = 100): Promise<ProjectListResponse> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  })
+
+  return request<ProjectListResponse>(`/api/admin/projects?${params.toString()}`)
+}
+
+export function createAdminProject(payload: AdminProjectPayload): Promise<ProjectItem> {
+  return request<ProjectItem>('/api/admin/projects', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function updateAdminProject(slug: string, payload: AdminProjectPayload): Promise<ProjectItem> {
+  return request<ProjectItem>(`/api/admin/projects/${encodeURIComponent(slug)}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function deleteAdminProject(slug: string): Promise<void> {
+  return request<void>(`/api/admin/projects/${encodeURIComponent(slug)}`, {
+    method: 'DELETE',
+  })
 }
 
 export function fetchAdminTools(page = 1, pageSize = 100): Promise<ToolListResponse> {
