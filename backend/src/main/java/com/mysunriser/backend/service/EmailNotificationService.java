@@ -1,11 +1,15 @@
 package com.mysunriser.backend.service;
 
+import com.mysunriser.backend.dto.Codes;
+import com.mysunriser.backend.exception.BizException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
@@ -56,7 +60,22 @@ public class EmailNotificationService {
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
-        mailSender.send(message);
+        try {
+            log.info("Sending mail; subject={}, to={}, from={}, smtp={}", subject, to, from, smtpSummary());
+            mailSender.send(message);
+            log.info("Mail sent; subject={}, to={}", subject, to);
+        } catch (MailException e) {
+            log.error("Mail delivery failed; subject={}, to={}, fallbackLink={}", subject, to, fallbackLink, e);
+            throw new BizException(Codes.INTERNAL_ERROR, "mail delivery failed; check SMTP settings");
+        }
+    }
+
+    private String smtpSummary() {
+        if (mailSender instanceof JavaMailSenderImpl impl) {
+            return impl.getHost() + ":" + impl.getPort();
+        }
+
+        return mailSender.getClass().getSimpleName();
     }
 
     private String encode(String token) {
